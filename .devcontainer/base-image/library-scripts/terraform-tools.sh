@@ -105,7 +105,7 @@ echo "Installing Trivy..."
 sudo apt-get update
 sudo apt-get install -y wget apt-transport-https gnupg lsb-release
 wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
 sudo apt-get update
 sudo apt-get install -y trivy
 
@@ -118,7 +118,7 @@ VENV_DIR="/opt/checkov-venv"
 sudo python3 -m venv ${VENV_DIR}
 
 # Install Checkov in the virtual environment
-sudo ${VENV_DIR}/bin/pip install checkov==${CHECKOV_VERSION}
+sudo "${VENV_DIR}"/bin/pip install checkov=="${CHECKOV_VERSION}"
 
 
 # Create a wrapper script for Checkov

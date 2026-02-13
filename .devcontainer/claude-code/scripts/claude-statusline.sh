@@ -187,7 +187,6 @@ esac
 # ══════════════════════════════════════════════════════════════════════
 
 MODEL=$(echo "$input" | jq -r '.model.display_name // "--"')
-MODEL_ID=$(echo "$input" | jq -r '.model.id // ""')
 CWD=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 PROJECT_DIR=$(echo "$input" | jq -r '.workspace.project_dir // ""')
 COST=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
@@ -263,6 +262,7 @@ fi
 if [ "$(echo "$COST > 0" | bc 2>/dev/null || echo 0)" = "1" ]; then
   COST_FMT=$(printf '$%.2f' "$COST")
 else
+  # shellcheck disable=SC2016
   COST_FMT='$0.00'
 fi
 

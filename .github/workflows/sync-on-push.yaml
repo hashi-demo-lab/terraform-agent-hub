@@ -59,7 +59,7 @@ jobs:
             if [[ -z "$FILES" ]]; then
               echo 'files=[]' >> "$GITHUB_OUTPUT"
             else
-              JSON=$(echo "$FILES" | jq -R -s 'split("\n") | map(select(length > 0))')
+              JSON=$(echo "$FILES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
               echo "files=${JSON}" >> "$GITHUB_OUTPUT"
             fi
           fi

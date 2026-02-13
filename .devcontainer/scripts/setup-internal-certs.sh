@@ -75,7 +75,7 @@ else
 
     # Create temp file for the full chain
     TEMP_CHAIN=$(mktemp)
-    trap "rm -f $TEMP_CHAIN" EXIT
+    trap 'rm -f $TEMP_CHAIN' EXIT
 
     if ! openssl s_client -connect "${INTERNAL_HOST}:443" -showcerts </dev/null 2>/dev/null \
         | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/{ print }' > "$TEMP_CHAIN"; then
@@ -101,6 +101,7 @@ else
 
     CERT_NUM=0
     CURRENT_CERT=""
+    # shellcheck disable=SC2094
     while IFS= read -r line; do
         CURRENT_CERT="${CURRENT_CERT}${line}"$'\n'
         if [[ "$line" == *"END CERTIFICATE"* ]]; then

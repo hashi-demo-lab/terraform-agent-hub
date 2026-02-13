@@ -63,13 +63,13 @@ sudo apt-get install -y --no-install-recommends google-cloud-cli
 sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
 
 # # Create directories for credentials
-mkdir -p $HOME/.aws
-mkdir -p $HOME/.azure
-mkdir -p $HOME/.config/gcloud
+mkdir -p "$HOME"/.aws
+mkdir -p "$HOME"/.azure
+mkdir -p "$HOME"/.config/gcloud
 
 # Set proper ownership
-chown -R $USER:$USER $HOME/.aws
-chown -R $USER:$USER $HOME/.azure
-chown -R $USER:$USER $HOME/.config/gcloud
+chown -R "$USER":"$USER" "$HOME"/.aws
+chown -R "$USER":"$USER" "$HOME"/.azure
+chown -R "$USER":"$USER" "$HOME"/.config/gcloud
 
 echo "Cloud CLI tools installation complete!"
