@@ -16,6 +16,9 @@ set -euo pipefail
 #   DRY_RUN          - "true" to skip PR creation
 # ──────────────────────────────────────────────
 
+# ── Authenticate gh CLI with the sync token ──
+export GH_TOKEN="$TOKEN"
+
 # ── Parse config from JSON ──────────────────
 DEFAULTS=$(echo "$MAPPINGS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d['defaults']))")
 MAPPINGS=$(echo "$MAPPINGS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d['mappings']))")
