@@ -16,11 +16,14 @@ terraform-agent-hub (this repo)
     ├── scripts/         ──→  scripts/           (downstream)
     └── templates/       ──→  templates/         (downstream)
     │
+    ├── reference/            (hub-only authoring guides)
+    ├── hooks/                (hub-only pre-commit validators)
     ├── sync-config.yaml      (mapping config)
     │
     └── GitHub Actions
          ├── sync-on-push     (push to main → PRs to downstream)
-         └── drift-detection  (daily check → PRs if drifted)
+         ├── drift-detection  (daily check → PRs if drifted)
+         └── lint             (pre-commit on PRs)
 ```
 
 ### How Sync Works
@@ -186,6 +189,34 @@ git add scripts/my-script.sh && git commit -m "Add my-script" && git push
 | Sync config itself changes | Both workflows are triggered, ensuring all repos get the updated mappings |
 
 ## Local Development
+
+### Pre-commit Hooks
+
+This repo uses [pre-commit](https://pre-commit.com/) for automated validation. Install once:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Hooks run automatically on `git commit`. To run manually:
+
+```bash
+# Run all hooks on all files
+pre-commit run --all-files
+
+# Run a specific hook
+pre-commit run validate-skills --all-files
+pre-commit run validate-agents --all-files
+```
+
+### Authoring Guides
+
+See `reference/` for comprehensive authoring guides:
+- [`reference/skills-authoring-guide.md`](reference/skills-authoring-guide.md) — SKILL.md spec and conventions
+- [`reference/agent-authoring-guide.md`](reference/agent-authoring-guide.md) — agent .md conventions
+
+### Testing Sync Config
 
 ```bash
 # Validate sync config syntax

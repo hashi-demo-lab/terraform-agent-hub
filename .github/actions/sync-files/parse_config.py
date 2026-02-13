@@ -26,7 +26,6 @@ Outputs a JSON object to stdout:
 import json
 import os
 import sys
-from pathlib import PurePosixPath
 
 import yaml
 
@@ -44,12 +43,18 @@ def load_config(config_path: str) -> dict:
         sys.exit(1)
 
     if not isinstance(config, dict):
-        print(f"::error::Config must be a YAML mapping, got {type(config).__name__}", file=sys.stderr)
+        print(
+            f"::error::Config must be a YAML mapping, got {type(config).__name__}",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     version = config.get("version")
     if version != "1":
-        print(f"::error::Unsupported config version: {version} (expected '1')", file=sys.stderr)
+        print(
+            f"::error::Unsupported config version: {version} (expected '1')",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     return config
@@ -139,7 +144,9 @@ def main():
     sync_mode = os.environ.get("SYNC_MODE", "incremental")
 
     if not downstream_repo:
-        print("::error::DOWNSTREAM_REPO environment variable is required", file=sys.stderr)
+        print(
+            "::error::DOWNSTREAM_REPO environment variable is required", file=sys.stderr
+        )
         sys.exit(1)
 
     try:

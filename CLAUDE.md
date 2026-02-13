@@ -10,6 +10,7 @@ Central hub repo for shared Claude Code agents, skills, scripts, and Terraform t
 - **Filtering** is handled entirely by `sync-config/sync-config.yaml` profiles, includes, and excludes
 - **Sync mechanism** uses a reusable composite action (`.github/actions/sync-files/`) shared by both workflows
 - **Two workflows**: push-triggered incremental sync + daily drift detection
+- **Hub-only directories** (`reference/`, `hooks/`) are not synced — they support content authoring and validation locally
 
 ## Key Files
 
@@ -19,6 +20,11 @@ Central hub repo for shared Claude Code agents, skills, scripts, and Terraform t
 - `.github/actions/sync-files/action.yaml` — composite action wiring inputs/outputs
 - `.github/workflows/sync-on-push.yaml` — push-triggered sync with matrix fan-out
 - `.github/workflows/sync-drift-detection.yaml` — scheduled daily drift detection
+- `.github/workflows/lint.yaml` — pre-commit CI on PRs
+- `hooks/validate_skills.py` — SKILL.md spec validator (pre-commit hook)
+- `hooks/validate_agents.py` — agent .md validator (pre-commit hook)
+- `reference/skills-authoring-guide.md` — comprehensive skills authoring spec
+- `reference/agent-authoring-guide.md` — agent authoring conventions
 
 ## Conventions
 
@@ -45,9 +51,25 @@ Central hub repo for shared Claude Code agents, skills, scripts, and Terraform t
 - Python: Python 3.11+, type hints, minimal dependencies (only `pyyaml`)
 - YAML: 2-space indent, quoted strings for values that could be misinterpreted
 
+### Pre-commit Hooks
+- Install: `pre-commit install` (one-time setup)
+- Run all: `pre-commit run --all-files`
+- Custom validators in `hooks/` follow the same style as `parse_config.py`
+- Hooks use `::error::` / `::warning::` annotations for GitHub Actions CI compatibility
+- Authoring guides in `reference/` document the rules that hooks enforce
+
 ## Commands
 
 ```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
+# Run skill validator directly
+python3 hooks/validate_skills.py
+
+# Run agent validator directly
+python3 hooks/validate_agents.py
+
 # Validate sync config
 python3 -c "import yaml; yaml.safe_load(open('sync-config/sync-config.yaml'))"
 

@@ -1,0 +1,52 @@
+repos:
+  # Standard file hygiene
+  - repo: "https://github.com/pre-commit/pre-commit-hooks"
+    rev: "v5.0.0"
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+
+  # YAML linting
+  - repo: "https://github.com/adrienverge/yamllint"
+    rev: "v1.35.1"
+    hooks:
+      - id: yamllint
+        args: ["-d", "{extends: relaxed, rules: {line-length: {max: 200}}}"]
+
+  # Shell script linting
+  - repo: "https://github.com/shellcheck-py/shellcheck-py"
+    rev: "v0.10.0.1"
+    hooks:
+      - id: shellcheck
+
+  # Python linting and formatting
+  - repo: "https://github.com/astral-sh/ruff-pre-commit"
+    rev: "v0.9.7"
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  # Custom skill and agent validators
+  - repo: local
+    hooks:
+      - id: validate-skills
+        name: "validate SKILL.md files"
+        entry: python3 hooks/validate_skills.py
+        language: python
+        additional_dependencies: ["pyyaml"]
+        files: "^skills/"
+        pass_filenames: true
+        types: [file]
+
+      - id: validate-agents
+        name: "validate agent .md files"
+        entry: python3 hooks/validate_agents.py
+        language: python
+        files: "^agents/.*\\.md$"
+        pass_filenames: true
+        types: [file]
