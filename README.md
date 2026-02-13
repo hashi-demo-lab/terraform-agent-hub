@@ -36,50 +36,17 @@ terraform-agent-hub (this repo)
 6. **Daily drift detection** — a scheduled workflow compares all mapped files across all downstream repos, catching manual edits or missed syncs
 
 ```text
-                         terraform-agent-hub
-                  ┌──────────────────────────────────┐
-                  │  agents/  skills/  scripts/  templates/  │
-                  └─────────────────┬────────────────┘
-                                    │
-                               push to main
-                                    │
-                     ┌──────────────▼──────────────┐
-                     │  sync-on-push.yaml           │
-                     │                              │
-                     │  ┌────────┐   lint fails:    │
-                     │  │  LINT  │──── stop ✗       │
-                     │  └───┬────┘                   │
-                     │      │ pass                   │
-                     │  ┌───▼─────┐                  │
-                     │  │ DETECT  │                  │
-                     │  │         │                  │
-                     │  │ changed files?             │
-                     │  │ which repos?               │
-                     │  └───┬─────┘                  │
-                     │      │                        │
-                     │  ┌───▼─────────────────┐      │
-                     │  │ SYNC (matrix fan-out)│      │
-                     │  │  max 4 parallel      │      │
-                     │  └──┬───┬───┬───┬──────┘      │
-                     └─────┼───┼───┼───┼─────────────┘
-                           │   │   │   │
-               ┌───────────▼┐ ┌▼┐ ┌▼┐ ┌▼───────────┐
-               │ downstream │ │…│ │…│ │ downstream │
-               │   repo-1   │ │ │ │ │ │   repo-N   │
-               │            │ └─┘ └─┘ │            │
-               │ clone      │         │ clone      │
-               │ rsync      │         │ rsync      │
-               │ diff       │         │ diff       │
-               │ open PR    │         │ open PR    │
-               └────────────┘         └────────────┘
+push to main ──▶ LINT ──▶ DETECT ──▶ SYNC ──▶ downstream repos
+                  │        │          │
+                  │        │          ├──▶ repo-1 (clone, rsync, PR)
+                  │        │          ├──▶ repo-2 (clone, rsync, PR)
+                  │        │          └──▶ repo-N (max 4 parallel)
+                  │        │
+                  │        └── which files changed? which repos affected?
+                  │
+                  └── fails? stop. no sync.
 
-  ┌──────────────────────────────────────────────────────────┐
-  │  drift-detection.yaml (daily 06:00 UTC)                  │
-  │                                                          │
-  │  Compares ALL mapped files across ALL downstream repos   │
-  │  Catches: manual edits, missed syncs, config changes     │
-  │  Opens PRs to re-align any repos that have drifted       │
-  └──────────────────────────────────────────────────────────┘
+daily 06:00 UTC ──▶ DRIFT DETECTION ──▶ full compare all repos ──▶ PRs if drifted
 ```
 
 ### Content Organization
