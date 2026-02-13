@@ -4,7 +4,7 @@ Central hub for shared Claude Code agents, skills, scripts, and markdown artifac
 
 ## Problem
 
-You manage multiple workflow template repos (`ai-iac-module-template`, `ai-iac-consumer-template`, `ai-iac--persona--template`, `tf-module-template`) that share common Claude Code agents, skills, scripts, and templates. When you update one of these shared files in a single repo, the others fall out of date. This repo is the single source of truth, with automated GitHub Actions to sync changes to all downstream repos via PRs.
+You manage multiple workflow template repos (`ai-iac-module-template`, `ai-iac-consumer-template`) that share common Claude Code agents, skills, scripts, and templates. When you update one of these shared files in a single repo, the others fall out of date. This repo is the single source of truth, with automated GitHub Actions to sync changes to all downstream repos via PRs.
 
 ## Architecture
 
