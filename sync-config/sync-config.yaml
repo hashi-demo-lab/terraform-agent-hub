@@ -30,51 +30,34 @@ global_excludes:
 # Profiles — groups of repos sharing sync mappings
 # ──────────────────────────────────────────────
 profiles:
+  # Templates-only profile: testing sync with templates first
+  templates-only:
+    repos:
+      - hashi-demo-lab/ai-iac-module-template
+    mappings:
+      - source: templates/
+        dest: .foundations/templates/
 
   # Standard profile: full sync of all content directories
-  standard:
-    repos:
-      - your-org/downstream-repo-1
-      - your-org/downstream-repo-2
-    mappings:
-      - source: agents/
-        dest: .claude/agents/
-      - source: skills/
-        dest: .claude/skills/
-      - source: scripts/
-        dest: scripts/
-      - source: templates/
-        dest: templates/
-
-  # Limited profile: agents and skills only (no scripts/templates)
-  limited:
-    repos:
-      - your-org/downstream-repo-3
-    mappings:
-      - source: agents/
-        dest: .claude/agents/
-      - source: skills/
-        dest: .claude/skills/
-
-  # Persona profile: agents and select skills, custom template path
-  persona:
-    repos:
-      - your-org/downstream-repo-4
-    mappings:
-      - source: agents/
-        dest: .claude/agents/
-      - source: skills/
-        dest: .claude/skills/
-        excludes:
-          - "skills/terraform-plan/**"
-      - source: templates/
-        dest: infra/templates/
+  # Uncomment and add repos when ready to sync agents, skills, scripts, and templates
+  # standard:
+  #   repos:
+  #     - hashi-demo-lab/ai-iac-module-template
+  #   mappings:
+  #     - source: agents/
+  #       dest: .claude/agents/
+  #     - source: skills/
+  #       dest: .claude/skills/
+  #     - source: scripts/
+  #       dest: scripts/
+  #     - source: templates/
+  #       dest: .claude/templates/
 
 # ──────────────────────────────────────────────
 # Standalone repos — custom one-off mappings
 # ──────────────────────────────────────────────
 # standalone:
-#   your-org/special-repo:
+#   hashi-demo-lab/special-repo:
 #     mappings:
 #       - source: agents/
 #         dest: .github/claude/agents/

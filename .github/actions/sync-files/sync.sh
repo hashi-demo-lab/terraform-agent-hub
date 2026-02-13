@@ -198,8 +198,15 @@ if [[ -n "$EXISTING_PR" && "$UPDATE_EXISTING_PR" == "true" ]]; then
   echo "::notice::Updated existing PR: $EXISTING_PR"
   echo "pr_url=$EXISTING_PR" >> "$GITHUB_OUTPUT"
 else
-  # Create new PR
+  # Ensure labels exist in downstream repo
   IFS=',' read -ra LABEL_ARRAY <<< "$PR_LABELS"
+  for label in "${LABEL_ARRAY[@]}"; do
+    if ! gh label list --repo "$DOWNSTREAM_REPO" --search "$label" --json name --jq '.[].name' 2>/dev/null | grep -qx "$label"; then
+      gh label create "$label" --repo "$DOWNSTREAM_REPO" --description "Automated sync from terraform-agent-hub" --color "1d76db" 2>/dev/null || true
+    fi
+  done
+
+  # Create new PR
   LABEL_ARGS=""
   for label in "${LABEL_ARRAY[@]}"; do
     LABEL_ARGS="$LABEL_ARGS --label $label"
