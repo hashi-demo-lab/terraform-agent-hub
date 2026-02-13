@@ -1,6 +1,6 @@
 # terraform-agent-hub
 
-Central hub for shared Claude Code agents, skills, scripts, and Terraform templates synced to downstream workflow repos.
+Central hub for shared Claude Code agents, skills, scripts, and markdown artifact templates synced to downstream workflow repos.
 
 ## Problem
 
@@ -21,18 +21,66 @@ terraform-agent-hub (this repo)
     ├── sync-config.yaml      (mapping config)
     │
     └── GitHub Actions
-         ├── sync-on-push     (push to main → PRs to downstream)
+         ├── sync-on-push     (lint → detect → sync PRs to downstream)
          ├── drift-detection  (daily check → PRs if drifted)
-         └── lint             (pre-commit on PRs)
+         └── lint             (pre-commit gate on PRs)
 ```
 
 ### How Sync Works
 
 1. **Push to main** — the `sync-on-push` workflow detects which files changed
-2. **Resolve affected repos** — the config parser determines which downstream repos map to those files
-3. **Matrix fan-out** — each affected repo is synced in parallel (max 4 concurrent)
-4. **rsync + PR** — files are copied to a branch in the downstream repo, and a PR is opened
-5. **Daily drift detection** — a scheduled workflow compares all mapped files across all downstream repos, catching manual edits or missed syncs
+2. **Lint gate** — pre-commit hooks must pass before sync proceeds
+3. **Resolve affected repos** — the config parser determines which downstream repos map to those files
+4. **Matrix fan-out** — each affected repo is synced in parallel (max 4 concurrent)
+5. **rsync + PR** — files are copied to a branch in the downstream repo, and a PR is opened
+6. **Daily drift detection** — a scheduled workflow compares all mapped files across all downstream repos, catching manual edits or missed syncs
+
+```text
+                         terraform-agent-hub
+                  ┌──────────────────────────────────┐
+                  │  agents/  skills/  scripts/  templates/  │
+                  └─────────────────┬────────────────┘
+                                    │
+                               push to main
+                                    │
+                     ┌──────────────▼──────────────┐
+                     │  sync-on-push.yaml           │
+                     │                              │
+                     │  ┌────────┐   lint fails:    │
+                     │  │  LINT  │──── stop ✗       │
+                     │  └───┬────┘                   │
+                     │      │ pass                   │
+                     │  ┌───▼─────┐                  │
+                     │  │ DETECT  │                  │
+                     │  │         │                  │
+                     │  │ changed files?             │
+                     │  │ which repos?               │
+                     │  └───┬─────┘                  │
+                     │      │                        │
+                     │  ┌───▼─────────────────┐      │
+                     │  │ SYNC (matrix fan-out)│      │
+                     │  │  max 4 parallel      │      │
+                     │  └──┬───┬───┬───┬──────┘      │
+                     └─────┼───┼───┼───┼─────────────┘
+                           │   │   │   │
+               ┌───────────▼┐ ┌▼┐ ┌▼┐ ┌▼───────────┐
+               │ downstream │ │…│ │…│ │ downstream │
+               │   repo-1   │ │ │ │ │ │   repo-N   │
+               │            │ └─┘ └─┘ │            │
+               │ clone      │         │ clone      │
+               │ rsync      │         │ rsync      │
+               │ diff       │         │ diff       │
+               │ open PR    │         │ open PR    │
+               └────────────┘         └────────────┘
+
+  ┌──────────────────────────────────────────────────────────┐
+  │  drift-detection.yaml (daily 06:00 UTC)                  │
+  │                                                          │
+  │  Compares ALL mapped files across ALL downstream repos   │
+  │  Catches: manual edits, missed syncs, config changes     │
+  │  Opens PRs to re-align any repos that have drifted       │
+  └──────────────────────────────────────────────────────────┘
+```
 
 ### Content Organization
 
