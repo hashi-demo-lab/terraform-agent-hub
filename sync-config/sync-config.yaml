@@ -1,0 +1,82 @@
+# terraform-agent-hub sync configuration
+# Controls how files are synced from this hub to downstream repos.
+# See sync-config/README.md for full schema documentation.
+
+version: "1"
+
+# ──────────────────────────────────────────────
+# Defaults applied to all syncs unless overridden
+# ──────────────────────────────────────────────
+defaults:
+  target_branch: main
+  pr_labels:
+    - hub-sync
+  branch_prefix: "hub-sync/"
+  commit_prefix: "chore(sync):"
+  sync_deletions: true
+  update_existing_pr: true
+
+# ──────────────────────────────────────────────
+# Patterns excluded from ALL syncs globally
+# ──────────────────────────────────────────────
+global_excludes:
+  - ".DS_Store"
+  - ".gitkeep"
+  - "**/README.md"
+  - "**/.terraform*"
+  - "**/*.tfstate*"
+
+# ──────────────────────────────────────────────
+# Profiles — groups of repos sharing sync mappings
+# ──────────────────────────────────────────────
+profiles:
+
+  # Standard profile: full sync of all content directories
+  standard:
+    repos:
+      - your-org/downstream-repo-1
+      - your-org/downstream-repo-2
+    mappings:
+      - source: agents/
+        dest: .claude/agents/
+      - source: skills/
+        dest: .claude/skills/
+      - source: scripts/
+        dest: scripts/
+      - source: templates/
+        dest: templates/
+
+  # Limited profile: agents and skills only (no scripts/templates)
+  limited:
+    repos:
+      - your-org/downstream-repo-3
+    mappings:
+      - source: agents/
+        dest: .claude/agents/
+      - source: skills/
+        dest: .claude/skills/
+
+  # Persona profile: agents and select skills, custom template path
+  persona:
+    repos:
+      - your-org/downstream-repo-4
+    mappings:
+      - source: agents/
+        dest: .claude/agents/
+      - source: skills/
+        dest: .claude/skills/
+        excludes:
+          - "skills/terraform-plan/**"
+      - source: templates/
+        dest: infra/templates/
+
+# ──────────────────────────────────────────────
+# Standalone repos — custom one-off mappings
+# ──────────────────────────────────────────────
+# standalone:
+#   your-org/special-repo:
+#     mappings:
+#       - source: agents/
+#         dest: .github/claude/agents/
+#       - source: scripts/
+#         dest: .ci/scripts/

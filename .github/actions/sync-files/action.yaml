@@ -1,0 +1,75 @@
+name: "Sync Hub Files"
+description: "Sync files from terraform-agent-hub to a downstream repo via PR"
+
+inputs:
+  downstream_repo:
+    description: "Target repo in org/name format"
+    required: true
+  token:
+    description: "GitHub PAT or App token with repo access"
+    required: true
+  hub_sha:
+    description: "Hub commit SHA that triggered the sync"
+    required: true
+  changed_files:
+    description: "JSON array of changed file paths (empty for full sync)"
+    required: false
+    default: "[]"
+  sync_mode:
+    description: "Sync mode: 'incremental' (changed files only) or 'full' (all mapped files)"
+    required: false
+    default: "incremental"
+  dry_run:
+    description: "If true, detect changes but don't create PRs"
+    required: false
+    default: "false"
+  config_path:
+    description: "Path to sync-config.yaml relative to repo root"
+    required: false
+    default: "sync-config/sync-config.yaml"
+
+outputs:
+  pr_url:
+    description: "URL of created/updated PR (empty if no changes)"
+    value: ${{ steps.sync.outputs.pr_url }}
+  changes_detected:
+    description: "Whether changes were detected (true/false)"
+    value: ${{ steps.sync.outputs.changes_detected }}
+  files_synced:
+    description: "Number of files synced"
+    value: ${{ steps.sync.outputs.files_synced }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install pyyaml
+
+    - name: Parse sync config
+      id: parse
+      shell: bash
+      env:
+        CONFIG_PATH: ${{ inputs.config_path }}
+        DOWNSTREAM_REPO: ${{ inputs.downstream_repo }}
+        CHANGED_FILES: ${{ inputs.changed_files }}
+        SYNC_MODE: ${{ inputs.sync_mode }}
+      run: |
+        RESULT=$(python3 "${{ github.action_path }}/parse_config.py")
+        echo "mappings=${RESULT}" >> "$GITHUB_OUTPUT"
+
+    - name: Sync files to downstream
+      id: sync
+      shell: bash
+      env:
+        DOWNSTREAM_REPO: ${{ inputs.downstream_repo }}
+        TOKEN: ${{ inputs.token }}
+        HUB_SHA: ${{ inputs.hub_sha }}
+        MAPPINGS_JSON: ${{ steps.parse.outputs.mappings }}
+        DRY_RUN: ${{ inputs.dry_run }}
+      run: bash "${{ github.action_path }}/sync.sh"

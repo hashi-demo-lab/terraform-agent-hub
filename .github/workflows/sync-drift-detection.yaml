@@ -1,0 +1,101 @@
+name: Drift Detection
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # Daily at 06:00 UTC
+
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Detect drift but don't create PRs"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  # ────────────────────────────────────────────
+  # Job 1: Collect all downstream repos from config
+  # ────────────────────────────────────────────
+  collect:
+    runs-on: ubuntu-latest
+    outputs:
+      repos: ${{ steps.list.outputs.repos }}
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: List all downstream repos
+        id: list
+        run: |
+          python3 << 'SCRIPT'
+          import json
+          import os
+          import yaml
+
+          with open("sync-config/sync-config.yaml") as f:
+              config = yaml.safe_load(f)
+
+          repos = []
+
+          for profile in config.get("profiles", {}).values():
+              repos.extend(profile.get("repos", []))
+
+          for repo in config.get("standalone", {}).keys():
+              repos.append(repo)
+
+          unique_repos = sorted(set(repos))
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"repos={json.dumps(unique_repos)}\n")
+
+          print(f"All downstream repos ({len(unique_repos)}): {unique_repos}")
+          SCRIPT
+
+  # ────────────────────────────────────────────
+  # Job 2: Check each repo for drift and sync if needed
+  # ────────────────────────────────────────────
+  check-drift:
+    needs: collect
+    if: ${{ needs.collect.outputs.repos != '[]' && needs.collect.outputs.repos != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        repo: ${{ fromJson(needs.collect.outputs.repos) }}
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Detect drift and sync ${{ matrix.repo }}
+        id: drift
+        uses: ./.github/actions/sync-files
+        with:
+          downstream_repo: ${{ matrix.repo }}
+          token: ${{ secrets.SYNC_PAT }}
+          hub_sha: ${{ github.sha }}
+          changed_files: "[]"
+          sync_mode: full
+          dry_run: ${{ inputs.dry_run || 'false' }}
+
+      - name: Report drift status
+        if: always()
+        run: |
+          if [[ "${{ steps.drift.outputs.changes_detected }}" == "true" ]]; then
+            echo "::warning::Drift detected in ${{ matrix.repo }} — ${{ steps.drift.outputs.files_synced }} files checked"
+            if [[ -n "${{ steps.drift.outputs.pr_url }}" ]]; then
+              echo "PR: ${{ steps.drift.outputs.pr_url }}"
+            fi
+          else
+            echo "::notice::No drift in ${{ matrix.repo }}"
+          fi

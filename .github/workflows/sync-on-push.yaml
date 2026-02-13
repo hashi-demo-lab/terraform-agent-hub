@@ -1,0 +1,153 @@
+name: Sync on Push
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "agents/**"
+      - "skills/**"
+      - "scripts/**"
+      - "templates/**"
+      - "sync-config/**"
+
+  workflow_dispatch:
+    inputs:
+      force_full_sync:
+        description: "Force full sync to all downstream repos (ignores changed-file filtering)"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Detect changes but don't create PRs"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  # ────────────────────────────────────────────
+  # Job 1: Detect changed files and resolve affected repos
+  # ────────────────────────────────────────────
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      repos: ${{ steps.resolve.outputs.repos }}
+      changed_files: ${{ steps.changes.outputs.files }}
+      sync_mode: ${{ steps.mode.outputs.sync_mode }}
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Determine sync mode
+        id: mode
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.force_full_sync }}" == "true" ]]; then
+            echo "sync_mode=full" >> "$GITHUB_OUTPUT"
+          else
+            echo "sync_mode=incremental" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Detect changed files
+        id: changes
+        run: |
+          if [[ "${{ steps.mode.outputs.sync_mode }}" == "full" ]]; then
+            echo 'files=[]' >> "$GITHUB_OUTPUT"
+          else
+            FILES=$(git diff --name-only HEAD~1 HEAD -- agents/ skills/ scripts/ templates/ sync-config/ 2>/dev/null || echo "")
+            if [[ -z "$FILES" ]]; then
+              echo 'files=[]' >> "$GITHUB_OUTPUT"
+            else
+              JSON=$(echo "$FILES" | jq -R -s 'split("\n") | map(select(length > 0))')
+              echo "files=${JSON}" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Resolve affected downstream repos
+        id: resolve
+        run: |
+          python3 << 'SCRIPT'
+          import json
+          import os
+          import yaml
+
+          config_path = "sync-config/sync-config.yaml"
+          with open(config_path) as f:
+              config = yaml.safe_load(f)
+
+          changed_files_json = os.environ.get("CHANGED_FILES", "[]")
+          sync_mode = os.environ.get("SYNC_MODE", "incremental")
+          changed_files = json.loads(changed_files_json)
+
+          all_repos = []
+
+          # Collect repos from profiles
+          for profile_name, profile in config.get("profiles", {}).items():
+              for repo in profile.get("repos", []):
+                  if sync_mode == "full":
+                      all_repos.append(repo)
+                      continue
+                  # Check if any changed file matches this profile's source mappings
+                  for mapping in profile.get("mappings", []):
+                      source = mapping["source"]
+                      if any(f.startswith(source) for f in changed_files):
+                          all_repos.append(repo)
+                          break
+
+          # Collect repos from standalone
+          for repo, standalone_config in config.get("standalone", {}).items():
+              if sync_mode == "full":
+                  all_repos.append(repo)
+                  continue
+              for mapping in standalone_config.get("mappings", []):
+                  source = mapping["source"]
+                  if any(f.startswith(source) for f in changed_files):
+                      all_repos.append(repo)
+                      break
+
+          # Deduplicate
+          unique_repos = sorted(set(all_repos))
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"repos={json.dumps(unique_repos)}\n")
+
+          print(f"Affected repos ({len(unique_repos)}): {unique_repos}")
+          SCRIPT
+        env:
+          CHANGED_FILES: ${{ steps.changes.outputs.files }}
+          SYNC_MODE: ${{ steps.mode.outputs.sync_mode }}
+
+  # ────────────────────────────────────────────
+  # Job 2: Sync each affected repo in parallel
+  # ────────────────────────────────────────────
+  sync:
+    needs: detect
+    if: ${{ needs.detect.outputs.repos != '[]' && needs.detect.outputs.repos != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        repo: ${{ fromJson(needs.detect.outputs.repos) }}
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Sync files to ${{ matrix.repo }}
+        uses: ./.github/actions/sync-files
+        with:
+          downstream_repo: ${{ matrix.repo }}
+          token: ${{ secrets.SYNC_PAT }}
+          hub_sha: ${{ github.sha }}
+          changed_files: ${{ needs.detect.outputs.changed_files }}
+          sync_mode: ${{ needs.detect.outputs.sync_mode }}
+          dry_run: ${{ inputs.dry_run || 'false' }}
