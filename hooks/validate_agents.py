@@ -53,7 +53,8 @@ def main() -> int:
     if len(sys.argv) > 1:
         # Pre-commit passes changed file paths as arguments
         agent_files = [
-            Path(arg) for arg in sys.argv[1:]
+            Path(arg)
+            for arg in sys.argv[1:]
             if arg.startswith("agents/") and arg.endswith(".md")
         ]
         if not agent_files:

@@ -48,7 +48,7 @@
           "aws-knowledge-mcp": {
             "url": "https://knowledge-mcp.global.api.aws",
             "type": "http"
-          }                      
+          }
         }
       }
 		}

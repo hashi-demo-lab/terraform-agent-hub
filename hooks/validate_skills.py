@@ -36,7 +36,12 @@ MAX_DESCRIPTION_LENGTH = 1024  # Per Anthropic spec
 NAME_PATTERN = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
 RESERVED_NAME_WORDS = {"claude", "anthropic"}  # Per Anthropic spec
 HARDCODED_PATH_PATTERN = re.compile(r"(/Users/|/home/|C:\\|D:\\)", re.IGNORECASE)
-FORBIDDEN_FILES = {"README.md", "CHANGELOG.md", "INSTALLATION_GUIDE.md", "QUICK_REFERENCE.md"}
+FORBIDDEN_FILES = {
+    "README.md",
+    "CHANGELOG.md",
+    "INSTALLATION_GUIDE.md",
+    "QUICK_REFERENCE.md",
+}
 
 
 def parse_frontmatter(content: str) -> tuple[dict | None, str]:
@@ -92,10 +97,14 @@ def validate_skill(skill_dir: Path) -> tuple[list[str], list[str]]:
         if not name:
             errors.append(f"{skill_md}: frontmatter missing required 'name' field")
         elif not isinstance(name, str):
-            errors.append(f"{skill_md}: 'name' must be a string, got {type(name).__name__}")
+            errors.append(
+                f"{skill_md}: 'name' must be a string, got {type(name).__name__}"
+            )
         else:
             if len(name) > MAX_NAME_LENGTH:
-                errors.append(f"{skill_md}: name '{name}' exceeds {MAX_NAME_LENGTH} chars")
+                errors.append(
+                    f"{skill_md}: name '{name}' exceeds {MAX_NAME_LENGTH} chars"
+                )
             if not NAME_PATTERN.match(name):
                 errors.append(
                     f"{skill_md}: name '{name}' is not valid kebab-case "
@@ -111,7 +120,9 @@ def validate_skill(skill_dir: Path) -> tuple[list[str], list[str]]:
         # description field: required, non-empty, under 1024 chars, no XML tags
         description = frontmatter.get("description")
         if not description:
-            errors.append(f"{skill_md}: frontmatter missing required 'description' field")
+            errors.append(
+                f"{skill_md}: frontmatter missing required 'description' field"
+            )
         elif not isinstance(description, str):
             errors.append(
                 f"{skill_md}: 'description' must be a string, got {type(description).__name__}"
@@ -173,8 +184,7 @@ def main() -> int:
             return 0
     elif SKILLS_DIR.is_dir():
         skill_dirs = {
-            d for d in SKILLS_DIR.iterdir()
-            if d.is_dir() and not d.name.startswith(".")
+            d for d in SKILLS_DIR.iterdir() if d.is_dir() and not d.name.startswith(".")
         }
     else:
         return 0

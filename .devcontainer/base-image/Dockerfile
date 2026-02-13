@@ -95,4 +95,4 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
     wget -qO- "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_VERSION}/golangci-lint-${GOLANGCI_VERSION}-linux-${GOLANGCI_ARCH}.tar.gz" | tar -xz -C /tmp && \
     mv "/tmp/golangci-lint-${GOLANGCI_VERSION}-linux-${GOLANGCI_ARCH}/golangci-lint" /home/node/go/bin/ && \
     rm -rf /tmp/golangci-lint-* && \
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc 
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
