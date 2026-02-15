@@ -59,9 +59,11 @@ Write structured research findings (<500 tokens) to `specs/{FEATURE}/research/re
 ## Research: {Question}
 
 ### Decision
+
 [What approach was chosen and why — one sentence]
 
 ### Resources Identified
+
 - **Primary Resource**: `aws_<resource_type>` — [purpose]
 - **Supporting Resources**:
   - `aws_<resource_type>` — [purpose]
@@ -71,14 +73,17 @@ Write structured research findings (<500 tokens) to `specs/{FEATURE}/research/re
 - **Security Considerations**: [encryption, access control, logging requirements]
 
 ### Rationale
+
 [Evidence-based justification with source references]
 
 ### Alternatives Considered
-| Alternative | Why Not |
-|-------------|--------|
-| [option] | [reason] |
+
+| Alternative | Why Not  |
+| ----------- | -------- |
+| [option]    | [reason] |
 
 ### Sources
+
 - [URL or reference]
 ```
 
@@ -90,9 +95,11 @@ Write structured research findings (<500 tokens) to `specs/{FEATURE}/research/re
 ## Research: What Terraform resources are needed for an Application Load Balancer with HTTPS?
 
 ### Decision
+
 Use `aws_lb` with `aws_lb_listener`, `aws_lb_target_group`, and `aws_security_group` — provides full ALB with HTTPS termination and security controls.
 
 ### Resources Identified
+
 - **Primary Resource**: `aws_lb` — the Application Load Balancer itself
 - **Supporting Resources**:
   - `aws_lb_listener` — HTTPS listener on port 443 with ACM certificate
@@ -105,19 +112,22 @@ Use `aws_lb` with `aws_lb_listener`, `aws_lb_target_group`, and `aws_security_gr
 - **Security Considerations**: Enable access logs to S3, use HTTPS listener with TLS 1.2+ policy, enable deletion protection, restrict security group ingress
 
 ### Rationale
+
 AWS best practices require HTTPS termination at the load balancer, HTTP-to-HTTPS redirect, and access logging. The `aws_lb` resource with `application` type supports all these natively. Deletion protection prevents accidental removal in production.
 
 ### Alternatives Considered
-| Alternative | Why Not |
-|-------------|--------|
-| `aws_alb` (alias) | Deprecated alias for `aws_lb` — use canonical name |
+
+| Alternative           | Why Not                                                                       |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `aws_alb` (alias)     | Deprecated alias for `aws_lb` — use canonical name                            |
 | Network Load Balancer | NLB operates at layer 4, lacks HTTP routing and HTTPS termination at LB level |
 
 ### Sources
+
 - AWS docs: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/
 - Provider docs: hashicorp/aws — `aws_lb`, `aws_lb_listener`, `aws_lb_target_group`
 ```
 
-## Context
+## Contexts
 
 $ARGUMENTS
