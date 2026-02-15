@@ -32,11 +32,11 @@ global_excludes:
 profiles:
   # Templates-only profile: testing sync with templates first
   templates-only:
-    repos:
-      - hashi-demo-lab/ai-iac-module-template
-    mappings:
-      - source: templates/
-        dest: .foundations/templates/
+    # repos:
+    #   - hashi-demo-lab/ai-iac-module-template
+    # mappings:
+    #   - source: templates/
+    #     dest: .foundations/templates/
 
   # Standard profile: full sync of all content directories
   standard:
