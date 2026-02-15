@@ -243,7 +243,12 @@ jobs:
 
           # Changed files (incremental only)
           if mode != "full" and files:
-              lines.append(f"### Changed files ({len(files)})")
+              lines.append(f"### Hub commit changes ({len(files)})")
+              lines.append("")
+              lines.append("> These files triggered the sync. The sync compares **all** mapped files")
+              lines.append("> in each affected directory, so the PR may include additional changes")
+              lines.append("> if the downstream repo has drifted.")
+              lines.append("")
               lines.append("```")
               for f in files:
                   lines.append(f)
