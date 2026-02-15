@@ -11,9 +11,11 @@
 #   - One agent per file, single responsibility
 #   - Avoid generic names: helper.md, assistant.md, default.md
 #
-# YAML Frontmatter Fields:
-#   - name:        REQUIRED — kebab-case, must match filename (max 64 chars)
-#   - description: REQUIRED — WHAT it does + WHEN to use it (max 1024 chars)
+# YAML Frontmatter (optional per guide — filename alone is sufficient for discovery):
+#   Standard fields:
+#   - name:        kebab-case, must match filename (max 64 chars)
+#   - description: WHAT it does + WHEN to use it (max 1024 chars)
+#   Optional non-standard fields:
 #   - model:       opus | sonnet | haiku (match to task complexity)
 #   - color:       UI identifier (blue, purple, magenta, orange, green, red)
 #   - skills:      reference skill names for progressive disclosure (Level 3 detail)
@@ -55,9 +57,20 @@ Be specific: "Evaluate Terraform modules for AWS security vulnerabilities"
 
 [WHAT this agent does, specifically. State the input it expects and the output it produces.]
 
-## Workflow
+## Role
 
 <!--
+Define the agent's persona, expertise, and perspective.
+What kind of specialist is this agent? What domain knowledge does it bring?
+Example: "You are a Terraform security specialist who evaluates IaC for AWS compliance violations."
+-->
+
+[PERSONA: Define expertise, perspective, and domain specialization for this agent.]
+
+## Instructions
+
+<!--
+Step-by-step guidance for how the agent should approach tasks.
 Structure as numbered steps with **bold phase names**.
 Each step = a clear, actionable phase with explicit inputs/outputs.
 Include data dependencies between steps.

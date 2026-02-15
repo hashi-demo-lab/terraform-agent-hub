@@ -37,20 +37,44 @@ agents/
 
 ## Optional YAML Frontmatter
 
-Agent files can optionally include YAML frontmatter for metadata:
+Agent files can optionally include YAML frontmatter for metadata. The filename alone is sufficient for discovery — use frontmatter when you want to provide a richer description or control agent behavior.
+
+### Standard Fields
+
+| Field           | Required | Description                                                        |
+| --------------- | -------- | ------------------------------------------------------------------ |
+| **name**        | No       | Kebab-case, must match filename (max 64 chars)                     |
+| **description** | No       | What the agent does + when to use it (max 1024 chars)              |
+
+### Optional Fields
+
+| Field      | Description                                                                           |
+| ---------- | ------------------------------------------------------------------------------------- |
+| **model**  | `opus`, `sonnet`, or `haiku` — match to task complexity                               |
+| **color**  | UI identifier (`blue`, `purple`, `magenta`, `orange`, `green`, `red`)                 |
+| **skills** | List of skill references for progressive disclosure (omit or leave empty if none)      |
+| **tools**  | List of tools the agent needs (`Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, etc.) |
+
+### Example
 
 ```markdown
 ---
 name: "terraform-expert"
 description: "Specialized in Terraform/OpenTofu IaC reviews and planning"
+model: opus
+color: blue
+skills:
+  - terraform-style-guide
+tools:
+  - Read
+  - Grep
+  - Glob
 ---
 
 # Terraform Expert
 
 You are a Terraform infrastructure specialist...
 ```
-
-The frontmatter is optional — the filename alone is sufficient for discovery. Use frontmatter when you want to provide a richer description or additional metadata.
 
 ---
 
@@ -73,10 +97,24 @@ Define the agent's persona, expertise, and perspective.
 
 Step-by-step guidance for how the agent should approach tasks.
 
+## Output
+
+Where results are written and in what format.
+
 ## Constraints
 
 Boundaries, limitations, or things the agent should avoid.
+
+## Examples
+
+Concrete good and bad output examples.
+
+## Context
+
+$ARGUMENTS
 ```
+
+The core sections are **Role**, **Instructions**, and **Constraints**. The remaining sections (**Output**, **Examples**, **Context**) are recommended — see `reference/AGENT-DEFINITION-TEMPLATE.md` for the full template with inline guidance.
 
 ### Tips
 
