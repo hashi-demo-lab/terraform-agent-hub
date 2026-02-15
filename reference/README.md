@@ -8,6 +8,7 @@ Hub-only authoring guides for content authors. These files are **not synced** to
 |------|-------------|
 | [skills-authoring-guide.md](skills-authoring-guide.md) | Comprehensive guide for writing SKILL.md files |
 | [agent-authoring-guide.md](agent-authoring-guide.md) | Guide for writing agent `.md` files |
+| [AGENT-DEFINITION-TEMPLATE.md](AGENT-DEFINITION-TEMPLATE.md) | Copy-and-fill template for new agent definitions |
 
 ## Usage
 
