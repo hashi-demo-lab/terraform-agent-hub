@@ -307,6 +307,7 @@ jobs:
           FILES_SYNCED: ${{ steps.sync.outputs.files_synced }}
           PR: ${{ steps.sync.outputs.pr_url }}
           CHANGED_LIST: ${{ steps.sync.outputs.changed_list }}
+          MANAGED_LIST: ${{ steps.sync.outputs.managed_list }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
           SYNC_MODE: ${{ needs.detect.outputs.sync_mode }}
         run: |
@@ -351,6 +352,18 @@ jobs:
               echo '```'
               echo "$CHANGED_LIST"
               echo '```'
+              echo ""
+            fi
+
+            # Managed file list
+            if [[ -n "$MANAGED_LIST" ]]; then
+              echo "<details>"
+              echo "<summary>All managed files (${FILES_SYNCED})</summary>"
+              echo ""
+              echo '```'
+              echo "$MANAGED_LIST"
+              echo '```'
+              echo "</details>"
               echo ""
             fi
           } >> "$GITHUB_STEP_SUMMARY"

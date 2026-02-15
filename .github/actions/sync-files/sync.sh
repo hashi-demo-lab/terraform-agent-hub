@@ -45,6 +45,7 @@ SHORT_SHA="${HUB_SHA:0:7}"
 SYNC_BRANCH="${BRANCH_PREFIX}${SHORT_SHA}"
 WORK_DIR=$(mktemp -d)
 FILES_SYNCED=0
+MANAGED_FILES_LIST=""
 
 echo "::group::Sync config for $DOWNSTREAM_REPO"
 echo "  Target branch: $TARGET_BRANCH"
@@ -128,9 +129,22 @@ for i in $(seq 0 $((MAPPING_COUNT - 1))); do
 
   SYNCED=$(find "$DOWNSTREAM_DEST" -type f | wc -l | tr -d ' ')
   FILES_SYNCED=$((FILES_SYNCED + SYNCED))
+  # Collect managed file paths relative to repo root
+  while IFS= read -r filepath; do
+    REL_PATH="${filepath#${WORK_DIR}/downstream/}"
+    MANAGED_FILES_LIST="${MANAGED_FILES_LIST}${REL_PATH}"$'\n'
+  done < <(find "$DOWNSTREAM_DEST" -type f | sort)
   echo "  Files in destination: $SYNCED"
   echo "::endgroup::"
 done
+
+# Output managed file list
+MANAGED_FILES_LIST="${MANAGED_FILES_LIST%$'\n'}"
+{
+  echo "managed_list<<MANAGED_LIST_EOF"
+  echo "$MANAGED_FILES_LIST"
+  echo "MANAGED_LIST_EOF"
+} >> "$GITHUB_OUTPUT"
 
 # ── Detect changes ─────────────────────────
 git add -A

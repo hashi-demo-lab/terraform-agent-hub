@@ -41,6 +41,9 @@ outputs:
   changed_list:
     description: "Newline-separated list of changed files in downstream repo"
     value: ${{ steps.sync.outputs.changed_list }}
+  managed_list:
+    description: "Newline-separated list of all managed files in downstream repo"
+    value: ${{ steps.sync.outputs.managed_list }}
 
 runs:
   using: "composite"
