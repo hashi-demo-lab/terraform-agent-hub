@@ -61,20 +61,31 @@ def load_config(config_path: str) -> dict:
 
 
 def find_repo_mappings(config: dict, downstream_repo: str) -> list[dict] | None:
-    """Find mappings for the given downstream repo from profiles or standalone."""
-    # Check profiles
+    """Find mappings for the given downstream repo from all matching profiles and standalone."""
+    all_mappings: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+
+    # Collect from all matching profiles
     profiles = config.get("profiles", {})
     for profile_name, profile in profiles.items():
         repos = profile.get("repos", [])
         if downstream_repo in repos:
-            return profile.get("mappings", [])
+            for m in profile.get("mappings", []):
+                key = (m["source"], m["dest"])
+                if key not in seen:
+                    seen.add(key)
+                    all_mappings.append(m)
 
-    # Check standalone
+    # Collect from standalone
     standalone = config.get("standalone", {})
     if standalone and downstream_repo in standalone:
-        return standalone[downstream_repo].get("mappings", [])
+        for m in standalone[downstream_repo].get("mappings", []):
+            key = (m["source"], m["dest"])
+            if key not in seen:
+                seen.add(key)
+                all_mappings.append(m)
 
-    return None
+    return all_mappings if all_mappings else None
 
 
 def filter_mappings_by_changed_files(
