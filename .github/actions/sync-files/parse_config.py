@@ -66,8 +66,10 @@ def find_repo_mappings(config: dict, downstream_repo: str) -> list[dict] | None:
     seen: set[tuple[str, str]] = set()
 
     # Collect from all matching profiles
-    profiles = config.get("profiles", {})
+    profiles = config.get("profiles", {}) or {}
     for profile_name, profile in profiles.items():
+        if not profile:
+            continue
         repos = profile.get("repos", [])
         if downstream_repo in repos:
             for m in profile.get("mappings", []):
@@ -77,8 +79,8 @@ def find_repo_mappings(config: dict, downstream_repo: str) -> list[dict] | None:
                     all_mappings.append(m)
 
     # Collect from standalone
-    standalone = config.get("standalone", {})
-    if standalone and downstream_repo in standalone:
+    standalone = config.get("standalone", {}) or {}
+    if downstream_repo in standalone and standalone[downstream_repo]:
         for m in standalone[downstream_repo].get("mappings", []):
             key = (m["source"], m["dest"])
             if key not in seen:

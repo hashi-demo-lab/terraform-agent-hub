@@ -30,14 +30,6 @@ global_excludes:
 # Profiles — groups of repos sharing sync mappings
 # ──────────────────────────────────────────────
 profiles:
-  # Templates-only profile: testing sync with templates first
-  templates-only:
-    # repos:
-    #   - hashi-demo-lab/ai-iac-module-template
-    # mappings:
-    #   - source: templates/
-    #     dest: .foundations/templates/
-
   # Standard profile: full sync of all content directories
   standard:
     repos:

@@ -162,6 +162,8 @@ jobs:
 
           # Collect repos from profiles
           for profile_name, profile in config.get("profiles", {}).items():
+              if not profile:
+                  continue
               for repo in profile.get("repos", []):
                   if sync_mode == "full":
                       all_repos.append(repo)
@@ -175,6 +177,8 @@ jobs:
 
           # Collect repos from standalone
           for repo, standalone_config in config.get("standalone", {}).items():
+              if not standalone_config:
+                  continue
               if sync_mode == "full":
                   all_repos.append(repo)
                   continue
