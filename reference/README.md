@@ -4,12 +4,12 @@ Hub-only authoring guides for content authors. These files are **not synced** to
 
 ## Contents
 
-| File | Description |
-|------|-------------|
-| [skills-authoring-guide.md](skills-authoring-guide.md) | Comprehensive guide for writing SKILL.md files |
+| File                                                         | Description                                      |
+| ------------------------------------------------------------ | ------------------------------------------------ |
+| [skills-authoring-guide.md](skills-authoring-guide.md)       | Comprehensive guide for writing SKILL.md files   |
 | [skill-definition-template.md](skill-definition-template.md) | Copy-and-fill template for new skill definitions |
-| [agent-authoring-guide.md](agent-authoring-guide.md) | Guide for writing agent `.md` files |
-| [AGENT-DEFINITION-TEMPLATE.md](AGENT-DEFINITION-TEMPLATE.md) | Copy-and-fill template for new agent definitions |
+| [agent-authoring-guide.md](agent-authoring-guide.md)         | Guide for writing agent `.md` files              |
+| [agent-definition-template.md](agent-definition-template.md) | Copy-and-fill template for new agent definitions |
 
 ## Usage
 
