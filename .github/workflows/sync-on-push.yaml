@@ -332,7 +332,7 @@ jobs:
             echo "| **Downstream repo** | [\`${REPO}\`](https://github.com/${REPO}) |"
             echo "| **Sync mode** | \`${SYNC_MODE}\` |"
             echo "| **Changes detected** | \`${CHANGES}\` |"
-            echo "| **Files in scope** | \`${FILES_SYNCED}\` |"
+            echo "| **Total managed files** | \`${FILES_SYNCED}\` |"
 
             if [[ "$DRY_RUN" == "true" ]]; then
               echo "| **Dry run** | \`true\` |"
