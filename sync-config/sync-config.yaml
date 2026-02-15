@@ -37,6 +37,8 @@ profiles:
     mappings:
       - source: templates/
         dest: .foundations/templates/
+      - source: agents/
+        dest: .claude/agents/
 
   # Standard profile: full sync of all content directories
   # Uncomment and add repos when ready to sync agents, skills, scripts, and templates
