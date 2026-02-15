@@ -1,11 +1,12 @@
 ---
-name: tf-module-tester
+name: tf-deployer
 description: |
   Test Terraform modules via terraform test and optional example deployment.
   Use after module implementation to validate through static checks, unit tests, and optional sandbox deployment.
 model: opus
 color: orange
 skills:
+  - terraform-test
 tools:
   - Bash
   - Read
@@ -14,7 +15,7 @@ tools:
   - Grep
 ---
 
-# tf-module-tester
+# tf-deployer
 
 Test Terraform modules through static checks, unit tests, and optional integration deployment to a sandbox workspace. Expects a Terraform module with standard structure (`main.tf`, `variables.tf`, `outputs.tf`), test files in `tests/` (`.tftest.hcl`), and examples in `examples/`.
 
@@ -47,6 +48,7 @@ Test Terraform modules through static checks, unit tests, and optional integrati
 ## Examples
 
 **Good** test report:
+
 ```
 ## Test Results
 
@@ -63,6 +65,7 @@ Total: 9/9 tests passed
 ```
 
 **Bad** test report:
+
 ```
 ## Test Results
 - terraform fmt: FAILED (2 files need formatting)
@@ -74,6 +77,7 @@ Run `terraform fmt -recursive` to fix formatting issues.
 ```
 
 Test file structure reference:
+
 ```hcl
 # tests/basic.tftest.hcl
 run "creates_resources" {

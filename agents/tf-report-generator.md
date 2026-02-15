@@ -16,7 +16,7 @@ tools:
   - Grep
 ---
 
-# tf-report-generator
+# Terraform Report Generator
 
 Generate a comprehensive module readiness report from template. Takes `plan.md`, `*.tf` files, git log, test results, example configurations, and module documentation as inputs.
 

@@ -10,6 +10,7 @@ tools:
   - Read
   - Write
   - Edit
+  - Glob
 ---
 
 # Task Breakdown Generator

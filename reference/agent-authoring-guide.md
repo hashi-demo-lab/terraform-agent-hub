@@ -1,7 +1,7 @@
 # Agent Authoring Guide
 
 Reference for writing Claude Code agent definition files in this hub.
-source: https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf
+source: https://code.claude.com/docs/en/sub-agents
 
 ---
 
@@ -87,11 +87,7 @@ A typical agent file follows this pattern:
 ```markdown
 # Agent Name
 
-Brief description of what this agent does.
-
-## Role
-
-Define the agent's persona, expertise, and perspective.
+Brief description of what this agent does — state the input it expects and the output it produces.
 
 ## Instructions
 
@@ -114,7 +110,7 @@ Concrete good and bad output examples.
 $ARGUMENTS
 ```
 
-The core sections are **Role**, **Instructions**, and **Constraints**. The remaining sections (**Output**, **Examples**, **Context**) are recommended — see `reference/AGENT-DEFINITION-TEMPLATE.md` for the full template with inline guidance.
+The core sections are **Instructions** and **Constraints**. The remaining sections (**Output**, **Examples**, **Context**) are recommended — see `reference/AGENT-DEFINITION-TEMPLATE.md` for the full template with inline guidance. The opening paragraph serves as the agent's identity — keep it specific and action-oriented (e.g., "Evaluate Terraform modules for AWS security vulnerabilities").
 
 ### Tips
 

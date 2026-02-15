@@ -21,13 +21,13 @@ Draft a phased implementation plan from validated specifications and research fi
 ## Workflow
 
 1. **Load**: Read `spec.md`, all research files from `specs/{FEATURE}/research/*.md`, and `.foundations/memory/constitution.md`. Extract all 'Security Considerations' from research files into a checklist. Verify each is addressed in the plan's resource inventory or security controls.
-3. **Design**: Architecture following `tf-architecture-patterns` skill patterns and `terraform-style-guide` for code style
-4. **Validate Resources**: Cross-reference provider documentation for each planned resource — confirm arguments, attributes, and behavioral constraints are understood
-5. **Generate**: Write `plan.md` with phases, dependencies, and rationale
-6. **Data Model**: Write `contracts/data-model.md` if entities are involved
-7. **Module Contracts**: Write `contracts/module-interfaces.md` using `.foundations/templates/contracts-template.md` — populate from research findings and provider docs. Document the module's public interface (inputs, outputs) and internal resource wiring.
-8. **Setup**: Run `.foundations/scripts/bash/setup-plan.sh` if available
-9. **Validate**: Confirm all `.foundations/memory/constitution.md` §3.2 files are covered, standard module structure is planned, testing strategy is defined
+2. **Design**: Architecture following `tf-architecture-patterns` skill patterns and `terraform-style-guide` for code style
+3. **Validate Resources**: Cross-reference provider documentation for each planned resource — confirm arguments, attributes, and behavioral constraints are understood
+4. **Generate**: Write `plan.md` with phases, dependencies, and rationale
+5. **Data Model**: Write `contracts/data-model.md` if entities are involved
+6. **Module Contracts**: Write `contracts/module-interfaces.md` using `.foundations/templates/contracts-template.md` — populate from research findings and provider docs. Document the module's public interface (inputs, outputs) and internal resource wiring.
+7. **Setup**: Run `.foundations/scripts/bash/setup-plan.sh` if available
+8. **Validate**: Confirm all `.foundations/memory/constitution.md` §3.2 files are covered, standard module structure is planned, testing strategy is defined
 
 ## Output
 
@@ -78,16 +78,19 @@ In addition to the template sections, ensure the plan includes:
 ## Testing Strategy
 
 ### Unit Tests (mocked)
+
 - Conditional creation: verify resources are not created when `var.create = false`
 - Variable validation: confirm invalid inputs are rejected
 - Output consistency: verify outputs reference correct resources
 
 ### Integration Tests
+
 - Deploy `examples/basic/` to sandbox workspace
 - Validate VPC, subnets, and route tables are created correctly
 - Verify flow logs are enabled and delivering to CloudWatch
 
 ### Pre-commit
+
 - `terraform fmt`, `terraform validate`, `tflint`, `trivy`, `terraform-docs`
 ```
 

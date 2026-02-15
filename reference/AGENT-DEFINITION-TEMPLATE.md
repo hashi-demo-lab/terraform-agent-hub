@@ -26,7 +26,7 @@
 #
 # Reference:
 #   reference/agent-authoring-guide.md
-#   Source: https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf
+#   Source: https://code.claude.com/docs/en/sub-agents
 #
 # =============================================================================
 
@@ -56,16 +56,6 @@ Be specific: "Evaluate Terraform modules for AWS security vulnerabilities"
 -->
 
 [WHAT this agent does, specifically. State the input it expects and the output it produces.]
-
-## Role
-
-<!--
-Define the agent's persona, expertise, and perspective.
-What kind of specialist is this agent? What domain knowledge does it bring?
-Example: "You are a Terraform security specialist who evaluates IaC for AWS compliance violations."
--->
-
-[PERSONA: Define expertise, perspective, and domain specialization for this agent.]
 
 ## Instructions
 

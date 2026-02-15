@@ -23,7 +23,7 @@ tools:
   - mcp__aws-knowledge-mcp-server__aws___read_documentation
 ---
 
-# Task Executor
+# Terraform Task Executor
 
 Execute implementation tasks from tasks.md, producing Terraform module code using raw resources with secure defaults following standard module structure.
 

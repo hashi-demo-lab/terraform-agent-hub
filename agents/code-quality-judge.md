@@ -16,7 +16,7 @@ tools:
   - mcp__terraform__get_latest_provider_version
 ---
 
-# Terraform Module Quality Judge
+# Code Quality Judge
 
 Assess Terraform module code across 6 weighted dimensions using the Agent-as-a-Judge pattern. Scoring rubrics, severity classification, and evidence requirements are provided by the `tf-judge-criteria` skill.
 
