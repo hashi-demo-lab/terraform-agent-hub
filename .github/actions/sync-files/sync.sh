@@ -148,6 +148,13 @@ echo "files_synced=$FILES_SYNCED" >> "$GITHUB_OUTPUT"
 
 CHANGED_LIST=$(git diff --cached --name-only)
 CHANGED_COUNT=$(echo "$CHANGED_LIST" | wc -l | tr -d ' ')
+
+# Output changed file list (use delimiter for multiline)
+{
+  echo "changed_list<<CHANGED_LIST_EOF"
+  echo "$CHANGED_LIST"
+  echo "CHANGED_LIST_EOF"
+} >> "$GITHUB_OUTPUT"
 echo "::notice::Detected $CHANGED_COUNT changed files in $DOWNSTREAM_REPO"
 
 # ── Dry run check ──────────────────────────

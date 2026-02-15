@@ -57,9 +57,9 @@ jobs:
           if [[ "${{ job.status }}" == "success" ]]; then
             echo "## :white_check_mark: Lint Passed" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "All pre-commit hooks passed. Proceeding to sync." >> "$GITHUB_STEP_SUMMARY"
+            echo "All pre-commit hooks passed. Proceeding to detect and sync." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "## :x: Lint Failed" >> "$GITHUB_STEP_SUMMARY"
+            echo "## :x: Lint Failed — Sync Blocked" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "Pre-commit hooks failed. Sync **will not run** until these are fixed." >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
@@ -172,41 +172,76 @@ jobs:
           SYNC_MODE: ${{ steps.mode.outputs.sync_mode }}
 
       - name: Summary
+        env:
+          REPOS: ${{ steps.resolve.outputs.repos }}
+          MODE: ${{ steps.mode.outputs.sync_mode }}
+          FILES: ${{ steps.changes.outputs.files }}
+          EVENT: ${{ github.event_name }}
+          FORCE_FULL: ${{ inputs.force_full_sync || 'false' }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          HUB_SHA: ${{ github.sha }}
+          HUB_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
-          REPOS='${{ steps.resolve.outputs.repos }}'
-          MODE='${{ steps.mode.outputs.sync_mode }}'
-          FILES='${{ steps.changes.outputs.files }}'
+          python3 << 'SUMMARY'
+          import json, os
 
-          echo "## :mag: Detection Results" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Setting | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Sync mode** | \`${MODE}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Trigger** | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Hub commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          repos = json.loads(os.environ.get("REPOS", "[]"))
+          mode = os.environ["MODE"]
+          files = json.loads(os.environ.get("FILES", "[]"))
+          event = os.environ["EVENT"]
+          force_full = os.environ["FORCE_FULL"]
+          dry_run = os.environ["DRY_RUN"]
+          hub_sha = os.environ["HUB_SHA"]
+          hub_url = os.environ["HUB_URL"]
+          short_sha = hub_sha[:7]
+          summary = os.environ["GITHUB_STEP_SUMMARY"]
 
-          if [[ "$MODE" != "full" && "$FILES" != "[]" ]]; then
-            echo "### Changed files" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            echo "$FILES" | python3 -c "import sys,json; [print(f) for f in json.loads(sys.stdin.read())]" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "(none)" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          lines = []
+          lines.append("## :mag: Detection Results")
+          lines.append("")
 
-          REPO_COUNT=$(echo "$REPOS" | python3 -c "import sys,json; print(len(json.loads(sys.stdin.read())))" 2>/dev/null || echo "0")
-          echo "### Downstream repos to sync (${REPO_COUNT})" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$REPO_COUNT" == "0" ]]; then
-            echo "> No downstream repos affected by this change. Sync will be skipped." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "$REPOS" | python3 -c "
-          import sys, json
-          repos = json.loads(sys.stdin.read())
-          for r in repos:
-              print(f'- \`{r}\`')
-          " >> "$GITHUB_STEP_SUMMARY"
-          fi
+          # Run info table
+          lines.append("| Setting | Value |")
+          lines.append("|---------|-------|")
+          lines.append(f"| **Trigger** | `{event}` |")
+          lines.append(f"| **Sync mode** | `{mode}` |")
+          lines.append(f"| **Hub commit** | [`{short_sha}`]({hub_url}/commit/{hub_sha}) |")
+
+          if event == "workflow_dispatch":
+              lines.append(f"| **Force full sync** | `{force_full}` |")
+              lines.append(f"| **Dry run** | `{dry_run}` |")
+          lines.append("")
+
+          # Changed files (incremental only)
+          if mode != "full" and files:
+              lines.append(f"### Changed files ({len(files)})")
+              lines.append("```")
+              for f in files:
+                  lines.append(f)
+              lines.append("```")
+              lines.append("")
+          elif mode == "full":
+              lines.append("> :arrows_counterclockwise: **Full sync** — all mapped files will be compared against downstream repos.")
+              lines.append("")
+
+          # Downstream repos
+          repo_count = len(repos)
+          lines.append(f"### Downstream repos ({repo_count})")
+          lines.append("")
+          if repo_count == 0:
+              lines.append("> :pause_button: No downstream repos matched. Sync will be **skipped**.")
+              if mode != "full" and files:
+                  lines.append(">")
+                  lines.append("> Changed files did not match any profile mapping sources.")
+                  lines.append("> If you expected a sync, use **workflow_dispatch** with **Force full sync**.")
+          else:
+              for r in repos:
+                  lines.append(f"- [`{r}`](https://github.com/{r})")
+          lines.append("")
+
+          with open(summary, "a") as f:
+              f.write("\n".join(lines) + "\n")
+          SUMMARY
 
   # ────────────────────────────────────────────
   # Job 3: Sync each affected repo in parallel
@@ -237,34 +272,56 @@ jobs:
 
       - name: Summary
         if: always()
+        env:
+          REPO: ${{ matrix.repo }}
+          CHANGES: ${{ steps.sync.outputs.changes_detected }}
+          FILES_SYNCED: ${{ steps.sync.outputs.files_synced }}
+          PR: ${{ steps.sync.outputs.pr_url }}
+          CHANGED_LIST: ${{ steps.sync.outputs.changed_list }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          SYNC_MODE: ${{ needs.detect.outputs.sync_mode }}
         run: |
-          REPO="${{ matrix.repo }}"
-          CHANGES="${{ steps.sync.outputs.changes_detected }}"
-          FILES="${{ steps.sync.outputs.files_synced }}"
-          PR="${{ steps.sync.outputs.pr_url }}"
-          DRY_RUN="${{ inputs.dry_run || 'false' }}"
+          {
+            echo "## :package: Sync: \`${REPO}\`"
+            echo ""
 
-          echo "## :package: Sync: \`${REPO}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Detail | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Repo** | \`${REPO}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Changes detected** | \`${CHANGES}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Files synced** | \`${FILES}\` |" >> "$GITHUB_STEP_SUMMARY"
+            # Status banner
+            if [[ "$CHANGES" == "true" && "$DRY_RUN" == "true" ]]; then
+              echo "> :eyes: **Dry run** — changes detected but no PR was created."
+            elif [[ "$CHANGES" == "true" && -n "$PR" ]]; then
+              echo "> :arrow_right: **PR created** — review and merge to apply changes."
+            elif [[ "$CHANGES" == "false" ]]; then
+              echo "> :white_check_mark: **Already in sync** — no changes needed."
+            else
+              echo "> :warning: Changes detected but no PR was created."
+            fi
+            echo ""
 
-          if [[ "$DRY_RUN" == "true" ]]; then
-            echo "| **Mode** | Dry run (no PR created) |" >> "$GITHUB_STEP_SUMMARY"
-          elif [[ -n "$PR" ]]; then
-            echo "| **PR** | [${PR}](${PR}) |" >> "$GITHUB_STEP_SUMMARY"
-          elif [[ "$CHANGES" == "false" ]]; then
-            echo "| **Result** | Already in sync |" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "| **Result** | No PR created |" >> "$GITHUB_STEP_SUMMARY"
-          fi
+            # Details table
+            echo "| Detail | Value |"
+            echo "|--------|-------|"
+            echo "| **Downstream repo** | [\`${REPO}\`](https://github.com/${REPO}) |"
+            echo "| **Sync mode** | \`${SYNC_MODE}\` |"
+            echo "| **Changes detected** | \`${CHANGES}\` |"
+            echo "| **Files in scope** | \`${FILES_SYNCED}\` |"
 
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$CHANGES" == "true" && -n "$PR" ]]; then
-            echo "> :arrow_right: Review and merge the PR to apply changes to \`${REPO}\`." >> "$GITHUB_STEP_SUMMARY"
-          elif [[ "$CHANGES" == "false" ]]; then
-            echo "> :white_check_mark: \`${REPO}\` is already up to date with the hub." >> "$GITHUB_STEP_SUMMARY"
-          fi
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "| **Dry run** | \`true\` |"
+            fi
+
+            if [[ -n "$PR" ]]; then
+              echo "| **Pull request** | [Open PR](${PR}) |"
+            fi
+            echo ""
+
+            # Changed file list
+            if [[ "$CHANGES" == "true" && -n "$CHANGED_LIST" ]]; then
+              CHANGED_COUNT=$(echo "$CHANGED_LIST" | wc -l | tr -d ' ')
+              echo "### Changed files (${CHANGED_COUNT})"
+              echo ""
+              echo '```'
+              echo "$CHANGED_LIST"
+              echo '```'
+              echo ""
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -38,6 +38,9 @@ outputs:
   files_synced:
     description: "Number of files synced"
     value: ${{ steps.sync.outputs.files_synced }}
+  changed_list:
+    description: "Newline-separated list of changed files in downstream repo"
+    value: ${{ steps.sync.outputs.changed_list }}
 
 runs:
   using: "composite"
