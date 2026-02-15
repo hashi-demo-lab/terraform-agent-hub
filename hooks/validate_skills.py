@@ -110,6 +110,12 @@ def validate_skill(skill_dir: Path) -> tuple[list[str], list[str]]:
                     f"{skill_md}: name '{name}' is not valid kebab-case "
                     f"(expected pattern: {NAME_PATTERN.pattern})"
                 )
+            # Name must match parent directory name (per AgentSkills.io spec)
+            if name != skill_dir.name:
+                errors.append(
+                    f"{skill_md}: name '{name}' does not match directory "
+                    f"name '{skill_dir.name}'"
+                )
             # Reserved words check (per Anthropic spec)
             for word in RESERVED_NAME_WORDS:
                 if word in name.lower():

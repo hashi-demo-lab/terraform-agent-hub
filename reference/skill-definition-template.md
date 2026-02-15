@@ -16,22 +16,50 @@
 #   ├── references/        (optional — documentation loaded on demand)
 #   └── assets/            (optional — templates, schemas, static resources)
 #
-# YAML Frontmatter Rules (AgentSkills.io spec):
+# YAML Frontmatter Rules:
+# Based on the AgentSkills.io open standard (https://agentskills.io),
+# Anthropic conventions, and Claude Code extensions.
+#
+# Required fields (AgentSkills.io base spec):
 #   - name: REQUIRED. Max 64 chars. Lowercase letters, numbers, hyphens only.
 #           Must not start/end with hyphen. No consecutive hyphens (--).
-#           Must match the parent directory name.
-#   - description: REQUIRED. Max 1024 chars. Describes WHAT it does + WHEN to
-#                  use it. Include trigger keywords that help agents identify
-#                  relevant tasks.
-#   - license: optional. License name or reference to bundled LICENSE file.
-#   - compatibility: optional. Max 500 chars. Environment requirements
+#           Must match the parent directory name. No reserved words
+#           ("claude", "anthropic"). No XML angle brackets (< >).
+#   - description: REQUIRED. Max 1024 chars. No XML angle brackets (< >).
+#                  Describes WHAT it does + WHEN to use it. Include trigger
+#                  keywords that help agents identify relevant tasks.
+#
+# Optional fields (AgentSkills.io / Anthropic spec):
+#   - license: License name or reference to bundled LICENSE file.
+#   - compatibility: Max 500 chars. Environment requirements
 #                    (products, system packages, network access).
-#   - metadata: optional. Arbitrary key-value pairs (author, version, etc.).
-#   - allowed-tools: optional. Space-delimited pre-approved tools.
+#   - metadata: Arbitrary key-value pairs (author, version, etc.).
+#   - allowed-tools: Space-delimited pre-approved tools.
+#
+# Optional fields (Claude Code extensions):
+#   - argument-hint: Hint shown during autocomplete (e.g., "[issue-number]").
+#   - disable-model-invocation: If true, only the user can invoke via /name.
+#                               Use for destructive/expensive operations.
+#   - user-invocable: If false, hides from / menu; only Claude can invoke.
+#                     Use for background knowledge skills.
+#   - model: Model to use when this skill is active.
+#   - context: Set to "fork" to run in a forked subagent context.
+#   - agent: Subagent type when context: fork (Explore, Plan, general-purpose).
+#   - hooks: Hooks scoped to this skill's lifecycle.
+#
+# String substitutions (Claude Code):
+#   - $ARGUMENTS / $ARGUMENTS[N] / $N: Arguments passed on invocation.
+#   - ${CLAUDE_SESSION_ID}: Current session ID.
+#   - !`command`: Runs a shell command before content is sent to Claude.
+#   See the skills authoring guide Section 7 for details.
+#
+# Forbidden files in skill directories:
+#   README.md, CHANGELOG.md, INSTALLATION_GUIDE.md, QUICK_REFERENCE.md
 #
 # Progressive Disclosure (3 levels):
-#   1. Metadata (~100 tokens): name + description — always loaded at startup
-#   2. Instructions (<5000 tokens): SKILL.md body — loaded on activation
+#   1. Metadata (~100 tokens): name + description — always loaded in system prompt
+#   2. Instructions: SKILL.md body — loaded on activation
+#      Budget: <5000 tokens (AgentSkills.io) / <5000 words (Anthropic PDF)
 #   3. Resources (as needed): scripts/, references/, assets/ — loaded on demand
 #
 # Key Principles:
@@ -58,6 +86,13 @@
 #     - Procedural skills: Steps → Decision Points → Examples
 #     - Reference skills: Lookup Tables → Rules → Exceptions
 #   Pick the structure that fits the domain. See examples below.
+#
+#   Note: These are CONTENT-TYPE patterns (how to structure the SKILL.md body).
+#   The skills authoring guide Section 10 covers WORKFLOW-TYPE patterns
+#   (Sequential, Multi-MCP, Iterative, Context-Aware, Domain-Specific) which
+#   describe how the skill orchestrates tasks at runtime. Both taxonomies are
+#   complementary — choose a body structure from here, and a workflow pattern
+#   from the guide.
 # =============================================================================
 
 name: skill-name

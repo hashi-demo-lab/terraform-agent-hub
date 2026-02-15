@@ -27,12 +27,20 @@ Claude can load multiple skills simultaneously. Your skill should work well alon
 
 ---
 
-## 2. Core Design Principle: Progressive Disclosure
+## 2. Core Design Principles
+
+### The Context Window Is a Public Good
+
+Skills share the context window with everything else Claude needs: system prompt, conversation history, other skills' metadata, and the actual user request. Only include what the model doesn't already know. Challenge each line: *does this justify its tokens?*
+
+*(Source: [Anthropic best-practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices))*
+
+### Progressive Disclosure
 
 Skills use a three-level system to minimize token usage while maintaining specialized expertise:
 
-1. **YAML frontmatter** (Level 1) — always loaded in Claude's system prompt. Provides just enough information for Claude to know *when* each skill should be used without loading all of it into context.
-2. **SKILL.md body** (Level 2) — loaded when Claude thinks the skill is relevant to the current task. Contains the full instructions and guidance.
+1. **YAML frontmatter** (Level 1) — always loaded in Claude's system prompt. Provides just enough information for Claude to know *when* each skill should be used without loading all of it into context. Budget: ~100 tokens.
+2. **SKILL.md body** (Level 2) — loaded when Claude thinks the skill is relevant to the current task. Contains the full instructions and guidance. Budget: <5,000 tokens ([AgentSkills.io](https://agentskills.io/specification)) / <5,000 words ([Anthropic PDF](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf)).
 3. **Linked files** (Level 3) — additional files bundled within the skill directory (`references/`, `scripts/`, `assets/`) that Claude can choose to navigate and discover only as needed.
 
 ### Design for Layers
@@ -112,7 +120,7 @@ Solution: [How to fix]
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| `name` | string | Kebab-case, no spaces, no capitals, should match folder name | Unique identifier for the skill |
+| `name` | string | Max 64 chars. Kebab-case only (lowercase letters, numbers, hyphens). Must not start/end with hyphen. No consecutive hyphens (`--`). Must match folder name. No reserved words ("claude", "anthropic"). | Unique identifier for the skill |
 | `description` | string | Under 1024 characters, no XML tags (`<` `>`) | Must include BOTH what it does AND when to use it (trigger conditions). Include specific tasks users might say. Mention file types if relevant. |
 
 ### Optional Fields (Anthropic Spec)
@@ -305,9 +313,25 @@ If you see "Connection refused":
 
 **For critical validations**, consider bundling a script that performs checks programmatically rather than relying on language instructions. Code is deterministic; language interpretation isn't.
 
+### Degrees of Freedom
+
+Match the specificity of your instructions to the fragility of the task:
+
+| Freedom Level | Format | When to Use |
+|---------------|--------|-------------|
+| **HIGH** | Text instructions | Multiple valid approaches; context-dependent decisions |
+| **MEDIUM** | Pseudocode / patterns | Preferred approach exists but some variation is OK |
+| **LOW** | Exact scripts | Fragile operations where consistency is critical |
+
+Think of Claude exploring a path: a narrow bridge with cliffs needs specific guardrails (low freedom), while an open field allows many valid routes (high freedom). Default to high freedom and only constrain further when the task demands it.
+
+*(Source: [Anthropic best-practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices))*
+
 ---
 
 ## 10. Common Patterns
+
+> **Note:** These are **workflow-type** patterns — they describe how a skill orchestrates tasks at runtime. For **content-type** patterns (how to structure the SKILL.md body itself — Knowledge, Procedural, or Reference), see the [skill definition template](skill-definition-template.md). The two taxonomies are complementary: choose a body structure from the template and a workflow pattern from here.
 
 ### Pattern 1: Sequential Workflow Orchestration
 
@@ -456,7 +480,10 @@ This hub repo has additional conventions beyond the base Anthropic spec:
 ### Size Limit
 - SKILL.md must be under **500 lines** (enforced by pre-commit hooks)
 - This aligns with the Claude Code docs tip: *"Keep SKILL.md under 500 lines. Move detailed reference material to separate files."*
-- The Anthropic PDF recommends keeping SKILL.md under 5,000 words — our line-based limit is easier to enforce programmatically
+- Token/word budgets from upstream sources:
+  - [AgentSkills.io specification](https://agentskills.io/specification): <5,000 tokens recommended for SKILL.md body
+  - [Anthropic PDF](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf): <5,000 words recommended
+  - Our 500-line limit is the strictest and easiest to enforce programmatically
 
 ### Sync Behavior
 - Everything under `skills/<name>/` is synced (SKILL.md, scripts/, references/, assets/)
