@@ -34,15 +34,15 @@ Generate an actionable, dependency-ordered task breakdown from planning artifact
 
 ### Required Sections
 
-| Section | Content |
-|---------|---------|
-| Header | Feature name, input path, prerequisites, tests stance |
-| Format explanation | Task ID format, sequential execution note |
-| Requirements Coverage Matrix | Requirement → Task(s) → Description |
-| Phase sections | Grouped tasks with purpose, checkpoints |
-| Dependencies & Execution Order | Phase deps, story deps, cross-module data flow |
-| Implementation Notes | Brief MVP-first note (max 5 lines); omit File Checklist (redundant with task descriptions) |
-| Task Summary | Single line: "**Total Tasks**: N" at end. Omit per-phase summary table. |
+| Section                        | Content                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------ |
+| Header                         | Feature name, input path, prerequisites, tests stance                                      |
+| Format explanation             | Task ID format, sequential execution note                                                  |
+| Requirements Coverage Matrix   | Requirement → Task(s) → Description                                                        |
+| Phase sections                 | Grouped tasks with purpose, checkpoints                                                    |
+| Dependencies & Execution Order | Phase deps, story deps, cross-module data flow                                             |
+| Implementation Notes           | Brief MVP-first note (max 5 lines); omit File Checklist (redundant with task descriptions) |
+| Task Summary                   | Single line: "**Total Tasks**: N" at end. Omit per-phase summary table.                    |
 
 ## Constraints
 
@@ -56,27 +56,32 @@ Generate an actionable, dependency-ordered task breakdown from planning artifact
 ## Examples
 
 **Good task** (story phase):
+
 ```markdown
 - [ ] T008 [US1] Implement VPC resource with conditional creation in main.tf using var.create_vpc flag at /main.tf
 ```
 
 **Good task** (setup phase):
+
 ```markdown
 - [ ] T001 Create terraform.tf with Terraform >= 1.7 and AWS provider ~> 5.83 at /terraform.tf
 ```
 
 **Bad task** (missing ID, label, path):
+
 ```markdown
 - [ ] Create VPC configuration
 ```
 
 **Good task** (testing phase):
+
 ```markdown
 - [ ] T020 [TEST] Create unit test for VPC defaults in tests/unit/vpc_defaults.tftest.hcl at /tests/unit/vpc_defaults.tftest.hcl
 - [ ] T021 [TEST] Create integration test for conditional creation in tests/integration/vpc_create_flag.tftest.hcl at /tests/integration/vpc_create_flag.tftest.hcl
 ```
 
 **Good phase header**:
+
 ```markdown
 ## Phase 3: User Story 1 - Access Static Website via Secure CDN (Priority: P1)
 
@@ -88,6 +93,7 @@ Generate an actionable, dependency-ordered task breakdown from planning artifact
 ```
 
 **Good testing phase header**:
+
 ```markdown
 ## Phase 5: Testing
 
