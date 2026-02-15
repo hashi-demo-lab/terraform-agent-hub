@@ -48,9 +48,9 @@ profiles:
       - source: skills/
         dest: .claude/skills/
       - source: scripts/
-        dest: scripts/
+        dest: .foundations/scripts/
       - source: templates/
-        dest: .claude/templates/
+        dest: .foundations/templates/
 
 # ──────────────────────────────────────────────
 # Standalone repos — custom one-off mappings
