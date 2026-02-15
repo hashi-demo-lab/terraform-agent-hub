@@ -49,25 +49,50 @@ jobs:
             pre-commit-
 
       - name: Run pre-commit
-        run: pre-commit run --all-files --show-diff-on-failure
+        id: pre_commit
+        run: |
+          pre-commit run --all-files --show-diff-on-failure 2>&1 | tee /tmp/pre-commit-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Summary
         if: always()
         run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            echo "## :white_check_mark: Lint Passed" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "All pre-commit hooks passed. Proceeding to detect and sync." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "## :x: Lint Failed — Sync Blocked" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Pre-commit hooks failed. Sync **will not run** until these are fixed." >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Run locally to reproduce:" >> "$GITHUB_STEP_SUMMARY"
-            echo '```bash' >> "$GITHUB_STEP_SUMMARY"
-            echo "pre-commit run --all-files" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-          fi
+          {
+            if [[ "${{ steps.pre_commit.outcome }}" == "success" ]]; then
+              echo "## :white_check_mark: Lint Passed"
+            else
+              echo "## :x: Lint Failed — Sync Blocked"
+            fi
+            echo ""
+
+            # Parse hook results from pre-commit output
+            if [[ -f /tmp/pre-commit-output.txt ]]; then
+              echo "| Hook | Status |"
+              echo "|------|--------|"
+              while IFS= read -r line; do
+                if echo "$line" | grep -qE '\.\.\.\.\.*Passed$'; then
+                  HOOK_NAME=$(echo "$line" | sed 's/\.\.\.\.*Passed$//' | xargs)
+                  echo "| ${HOOK_NAME} | :white_check_mark: Passed |"
+                elif echo "$line" | grep -qE '\.\.\.\.*Failed$'; then
+                  HOOK_NAME=$(echo "$line" | sed 's/\.\.\.\.*Failed$//' | xargs)
+                  echo "| ${HOOK_NAME} | :x: Failed |"
+                elif echo "$line" | grep -qE '\.\.\.\.*Skipped$'; then
+                  HOOK_NAME=$(echo "$line" | sed 's/\.\.\.\.*Skipped$//' | xargs)
+                  echo "| ${HOOK_NAME} | :next_track_button: Skipped |"
+                fi
+              done < /tmp/pre-commit-output.txt
+              echo ""
+            fi
+
+            if [[ "${{ steps.pre_commit.outcome }}" != "success" ]]; then
+              echo "Sync **will not run** until these are fixed."
+              echo ""
+              echo "Run locally to reproduce:"
+              echo '```bash'
+              echo "pre-commit run --all-files"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ────────────────────────────────────────────
   # Job 2: Detect changed files and resolve affected repos
