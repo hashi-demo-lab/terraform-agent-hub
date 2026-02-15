@@ -37,23 +37,20 @@ profiles:
     mappings:
       - source: templates/
         dest: .foundations/templates/
-      - source: agents/
-        dest: .claude/agents/
 
   # Standard profile: full sync of all content directories
-  # Uncomment and add repos when ready to sync agents, skills, scripts, and templates
-  # standard:
-  #   repos:
-  #     - hashi-demo-lab/ai-iac-module-template
-  #   mappings:
-  #     - source: agents/
-  #       dest: .claude/agents/
-  #     - source: skills/
-  #       dest: .claude/skills/
-  #     - source: scripts/
-  #       dest: scripts/
-  #     - source: templates/
-  #       dest: .claude/templates/
+  standard:
+    repos:
+      - hashi-demo-lab/ai-iac-module-template
+    mappings:
+      - source: agents/
+        dest: .claude/agents/
+      - source: skills/
+        dest: .claude/skills/
+      - source: scripts/
+        dest: scripts/
+      - source: templates/
+        dest: .claude/templates/
 
 # ──────────────────────────────────────────────
 # Standalone repos — custom one-off mappings
