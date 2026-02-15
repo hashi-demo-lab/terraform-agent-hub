@@ -1,6 +1,7 @@
 # Agent Authoring Guide
 
 Reference for writing Claude Code agent definition files in this hub.
+source: https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf
 
 ---
 
@@ -24,13 +25,13 @@ agents/
 
 ### Rules
 
-| Rule | Details |
-|------|---------|
-| **One file per agent** | Each `.md` file defines exactly one agent |
-| **Filename = agent name** | `terraform-expert.md` → agent named "terraform-expert" |
-| **Kebab-case filenames** | `^[a-z][a-z0-9-]+\.md$` — lowercase, hyphens, ends in `.md` |
-| **Non-empty** | File must have content (instructions for Claude) |
-| **Single responsibility** | One agent = one specialized role or workflow |
+| Rule                      | Details                                                     |
+| ------------------------- | ----------------------------------------------------------- |
+| **One file per agent**    | Each `.md` file defines exactly one agent                   |
+| **Filename = agent name** | `terraform-expert.md` → agent named "terraform-expert"      |
+| **Kebab-case filenames**  | `^[a-z][a-z0-9-]+\.md$` — lowercase, hyphens, ends in `.md` |
+| **Non-empty**             | File must have content (instructions for Claude)            |
+| **Single responsibility** | One agent = one specialized role or workflow                |
 
 ---
 
@@ -89,13 +90,16 @@ Boundaries, limitations, or things the agent should avoid.
 ## Hub-Specific Conventions
 
 ### Naming
+
 - Filename must match the agent's identity: `security-auditor.md` for a security review agent
 - Avoid generic names: `helper.md`, `assistant.md`, `default.md`
 
 ### Sync Behavior
+
 - All `.md` files in `agents/` are synced (except `README.md`, which is globally excluded)
 - Excluded agents can be configured per-profile in `sync-config/sync-config.yaml`
 
 ### Validation
+
 - Pre-commit hooks enforce: non-empty content, kebab-case filename
 - Run `python3 hooks/validate_agents.py` locally to check before committing
