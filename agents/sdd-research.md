@@ -1,9 +1,6 @@
 ---
 name: sdd-research
-description: >
-  Investigate specific unknowns via AWS docs, provider docs, and registry patterns.
-  Each instance answers ONE research question. Use during planning phase to resolve
-  resource behavior, best practices, and architectural unknowns.
+description: Investigate specific unknowns via AWS docs, provider docs, and registry patterns. Each instance answers ONE research question. Use during planning phase to resolve resource behavior, best practices, and architectural unknowns.
 model: opus
 color: cyan
 skills:

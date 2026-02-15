@@ -1,8 +1,6 @@
 ---
 name: tf-deployer
-description: |
-  Test Terraform modules via terraform test and optional example deployment.
-  Use after module implementation to validate through static checks, unit tests, and optional sandbox deployment.
+description: Test Terraform modules via terraform test and optional example deployment. Use after module implementation to validate through static checks, unit tests, and optional sandbox deployment.
 model: opus
 color: orange
 skills:

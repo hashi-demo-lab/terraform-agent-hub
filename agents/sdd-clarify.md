@@ -1,9 +1,6 @@
 ---
 name: sdd-clarify
-description: >
-  Resolve ambiguities in Terraform feature specifications using structured taxonomy scan.
-  Identifies high-impact decision points and resolves them interactively.
-  Use after spec creation, before plan drafting.
+description: Resolve ambiguities in Terraform feature specifications using structured taxonomy scan. Identifies high-impact decision points and resolves them interactively. Use after spec creation, before plan drafting.
 model: opus
 color: cyan
 skills:
@@ -48,6 +45,7 @@ Updated `spec.md` with ambiguities resolved. Each resolution is incorporated nat
 **Taxonomy scan result**: Category 4 (Non-Functional Quality Attributes) — Partial
 
 **Question presented via AskUserQuestion**:
+
 ```
 Should this module support multi-region deployment out of the box?
 

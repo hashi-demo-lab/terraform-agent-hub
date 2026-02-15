@@ -1,9 +1,6 @@
 ---
 name: sdd-analyze
-description: >
-  Cross-artifact consistency checking across spec, plan, and tasks.
-  Detects coverage gaps, terminology drift, duplications, and constitution violations.
-  Use after plan and tasks are generated, before implementation.
+description: Cross-artifact consistency checking across spec, plan, and tasks Detects coverage gaps, terminology drift, duplications, and constitution violations.
 model: opus
 color: blue
 skills:
@@ -30,6 +27,7 @@ When running iteration 2+, re-read ALL artifacts fresh from disk. Do not rely on
 ### 2. Analyze
 
 Build internal semantic models (not included in output):
+
 - **Requirements inventory**: Each functional + non-functional requirement with a stable key (e.g. "User can upload file" → `user-can-upload-file`)
 - **User story/action inventory**: Discrete user actions with acceptance criteria
 - **Task coverage mapping**: Map each task to requirements/stories by keyword match or explicit reference
@@ -41,12 +39,12 @@ Run all 7 detection passes from `tf-consistency-rules` skill (A–G). Limit to 5
 
 Assign severity to each finding:
 
-| Severity | Criteria |
-|----------|----------|
+| Severity     | Criteria                                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
 | **CRITICAL** | Constitution MUST violation, missing core artifact, requirement with zero coverage blocking baseline |
-| **HIGH** | Duplicate/conflicting requirement, ambiguous security/performance, untestable criterion |
-| **MEDIUM** | Terminology drift, missing non-functional task coverage, underspecified edge case |
-| **LOW** | Style/wording improvements, minor redundancy |
+| **HIGH**     | Duplicate/conflicting requirement, ambiguous security/performance, untestable criterion              |
+| **MEDIUM**   | Terminology drift, missing non-functional task coverage, underspecified edge case                    |
+| **LOW**      | Style/wording improvements, minor redundancy                                                         |
 
 ### 4. Report
 
@@ -56,29 +54,32 @@ Write report to `specs/{FEATURE}/evaluations/consistency-analysis.md`:
 # Consistency Analysis: {Feature Name}
 
 ## Summary
+
 - **Total Findings**: N (X Critical, Y High, Z Medium, W Low)
 - **Coverage**: X% of requirements have associated tasks
 - **Recommendation**: [Proceed | Fix Critical Issues First]
 
 ## Findings
 
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|----|----------|----------|-------------|---------|----------------|
-| A1 | Duplication | Medium | spec:2.1, plan:3 | Near-duplicate requirement | Consolidate in spec |
+| ID  | Category    | Severity | Location(s)      | Summary                    | Recommendation      |
+| --- | ----------- | -------- | ---------------- | -------------------------- | ------------------- |
+| A1  | Duplication | Medium   | spec:2.1, plan:3 | Near-duplicate requirement | Consolidate in spec |
 
 ## Coverage Matrix
 
-| Requirement Key | Has Task? | Task IDs | Notes |
-|-----------------|-----------|----------|-------|
-| FR-001 | Yes | T003, T004 | Full coverage |
+| Requirement Key | Has Task? | Task IDs   | Notes         |
+| --------------- | --------- | ---------- | ------------- |
+| FR-001          | Yes       | T003, T004 | Full coverage |
 
 ## Metrics
+
 - Total Requirements: N | Total Tasks: N
 - Coverage: X% | Ambiguities: N | Duplications: N
 - Critical Issues: N
 - Checklist Items: X total | Y addressed | Z unaddressed
 
 ## Next Actions
+
 - CRITICAL issues → Resolve before `/tf-implement`
 - Suggested edits to spec, plan, or tasks for resolution
 ```
@@ -97,15 +98,15 @@ Write report to `specs/{FEATURE}/evaluations/consistency-analysis.md`:
 
 **In scope** — spec says X, tasks don't cover X:
 
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|----|----------|----------|-------------|---------|----------------|
-| E1 | Coverage Gap | HIGH | spec:3.2 (FR-003), tasks.md | Spec requires "auto-scaling based on CPU threshold" but no task in tasks.md implements or configures auto-scaling | Add task to implement auto-scaling configuration matching spec requirement |
+| ID  | Category     | Severity | Location(s)                 | Summary                                                                                                           | Recommendation                                                             |
+| --- | ------------ | -------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| E1  | Coverage Gap | HIGH     | spec:3.2 (FR-003), tasks.md | Spec requires "auto-scaling based on CPU threshold" but no task in tasks.md implements or configures auto-scaling | Add task to implement auto-scaling configuration matching spec requirement |
 
 **In scope** — terminology drift:
 
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|----|----------|----------|-------------|---------|----------------|
-| F1 | Inconsistency | MEDIUM | spec:2.1, plan:4.2 | Spec calls it "application load balancer", plan calls it "HTTP listener" without cross-reference | Align terminology; use "ALB" consistently or add explicit mapping |
+| ID  | Category      | Severity | Location(s)        | Summary                                                                                          | Recommendation                                                    |
+| --- | ------------- | -------- | ------------------ | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| F1  | Inconsistency | MEDIUM   | spec:2.1, plan:4.2 | Spec calls it "application load balancer", plan calls it "HTTP listener" without cross-reference | Align terminology; use "ALB" consistently or add explicit mapping |
 
 ## Context
 

@@ -1,9 +1,6 @@
 ---
 name: sdd-checklist
-description: >
-  Generate domain-specific quality validation checklists for Terraform feature requirements.
-  Tests requirement quality, not implementation behavior. Use after spec creation to validate
-  requirement completeness and clarity.
+description: Generate domain-specific quality validation checklists for Terraform feature requirements. Tests requirement quality, not implementation behavior. Use after spec creation to validate requirement completeness and clarity.
 model: opus
 color: blue
 skills:
@@ -45,11 +42,13 @@ Items must follow the format: `- [ ] CHK### - [Question about requirement qualit
 ## Examples
 
 **Good checklist item**:
+
 ```markdown
 - [ ] CHK007 - Are module inputs for security-sensitive features (encryption, public access) defaulted to the secure option? [Clarity, Spec: Functional Requirements]
 ```
 
 **Bad checklist item** (tests implementation, not requirement quality):
+
 ```markdown
 - [ ] CHK007 - Verify the S3 bucket resource has encryption enabled
 ```

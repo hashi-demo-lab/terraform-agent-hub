@@ -1,8 +1,6 @@
 ---
 name: aws-security-advisor
-description: >
-  Evaluate Terraform infrastructure for AWS security vulnerabilities, compliance gaps,
-  and misconfigurations. Use proactively after plan creation or before deployment.
+description: Evaluate Terraform infrastructure for AWS security vulnerabilities, compliance gaps, and misconfigurations. Use proactively after plan creation or before deployment.
 model: opus
 color: magenta
 skills:
@@ -38,7 +36,7 @@ Write security issues to `specs/{FEATURE}/reports/security-review.md`
 After all findings, include a `## Spec Impact Summary` section:
 
 | Finding | Spec Change Needed | Suggested FR ID |
-|---------|-------------------|-----------------|
+| ------- | ------------------ | --------------- |
 
 Each finding MUST use this structure:
 
@@ -79,6 +77,7 @@ Each finding MUST use this structure:
 **Finding**: `providers.tf:5-8` contains hardcoded AWS keys in plain text.
 **Impact**: Full account compromise, data breach, compliance violations
 **Recommendation**:
+
 1. Rotate credentials immediately via IAM Console
 2. Use IAM roles (EC2/ECS/Lambda) or environment variables
 3. Never commit credentials to version control
@@ -104,6 +103,7 @@ provider "aws" {
 **Effort**: Low (rotate + configure IAM role)
 
 **Bad finding** (missing citations and evidence):
+
 > "Security groups look too open" — no file:line, no risk rating, no source URL.
 
 ## Context
