@@ -128,6 +128,6 @@ AWS best practices require HTTPS termination at the load balancer, HTTP-to-HTTPS
 - Provider docs: hashicorp/aws — `aws_lb`, `aws_lb_listener`, `aws_lb_target_group`
 ```
 
-## Contexts
+## Context
 
 $ARGUMENTS
