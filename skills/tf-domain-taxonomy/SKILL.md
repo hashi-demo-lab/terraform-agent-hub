@@ -1,9 +1,6 @@
 ---
 name: tf-domain-taxonomy
-description: >
-  8-category ambiguity taxonomy for Terraform infrastructure specifications.
-  Structured scan methodology, prioritization heuristics, and clarification
-  question patterns. Preloaded by sdd-clarify agent.
+description: 8-category ambiguity taxonomy for Terraform infrastructure specifications. Structured scan methodology, prioritization heuristics, and clarification question patterns. Use when scanning Terraform specifications for ambiguity, missing decision points, or underspecified requirements.
 ---
 
 # Terraform Specification Ambiguity Taxonomy
@@ -15,22 +12,26 @@ Detect and reduce ambiguity or missing decision points in feature specifications
 ## 8-Category Taxonomy
 
 ### 1. Functional Scope & Behavior
+
 - Core user goals & success criteria
 - Explicit out-of-scope declarations
 - User roles / personas differentiation
 
 ### 2. Domain & Data Model
+
 - Entities, attributes, relationships
 - Identity & uniqueness rules
 - Lifecycle/state transitions
 - Data volume / scale assumptions
 
 ### 3. Operational Workflows & Day-2 Operations
+
 - Provisioning and deployment sequences
 - Day-2 operations (scaling, patching, rotation)
 - Failure recovery and rollback procedures
 
 ### 4. Non-Functional Quality Attributes
+
 - Performance (latency, throughput targets)
 - Scalability (horizontal/vertical, limits)
 - Reliability & availability (uptime, recovery expectations)
@@ -39,11 +40,13 @@ Detect and reduce ambiguity or missing decision points in feature specifications
 - Compliance / regulatory constraints
 
 ### 5. Integration & External Dependencies
+
 - External services/APIs and failure modes
 - Data import/export formats
 - Protocol/versioning assumptions
 
 ### 6. Edge Cases & Failure Handling
+
 - Negative scenarios
 - Rate limiting / throttling
 - Resource dependency failures and circular references
@@ -51,10 +54,12 @@ Detect and reduce ambiguity or missing decision points in feature specifications
 - State drift and import scenarios
 
 ### 7. Constraints & Tradeoffs
+
 - Technical constraints (language, storage, hosting)
 - Explicit tradeoffs or rejected alternatives
 
 ### 8. Terminology & Consistency
+
 - Canonical glossary terms
 - Avoided synonyms / deprecated terms
 
@@ -66,6 +71,7 @@ Detect and reduce ambiguity or missing decision points in feature specifications
 ## Prioritization Heuristic
 
 Rank by `Impact × Uncertainty`:
+
 - High impact + high uncertainty → ask first
 - Low impact regardless of uncertainty → skip or defer
 - Categories already Clear → skip entirely
@@ -88,6 +94,7 @@ Rank by `Impact × Uncertainty`:
 ## Terraform-Specific Focus Areas
 
 When scanning Terraform infrastructure specs, pay special attention to:
+
 - Network topology ambiguity (VPC layout, subnet strategy, connectivity)
 - IAM permission scope (least privilege boundaries)
 - Encryption requirements (at-rest, in-transit, key management)

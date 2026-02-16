@@ -1,6 +1,6 @@
 ---
 name: tf-spec-writing
-description: Terraform module specification writing patterns. User story formats, success criteria templates, requirement quality rules, and module-specific spec conventions.
+description: Terraform module specification writing patterns. Use when writing or reviewing Terraform module specifications, user stories, success criteria, or requirement quality rules.
 ---
 
 # Terraform Module Specification Patterns

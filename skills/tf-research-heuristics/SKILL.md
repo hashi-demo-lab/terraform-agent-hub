@@ -1,6 +1,6 @@
 ---
 name: tf-research-heuristics
-description: Research strategies for AWS documentation, provider docs, and public registry patterns. Effective investigation approaches for module development unknowns.
+description: Research strategies for AWS documentation, provider docs, and public registry patterns. Use when researching AWS services, investigating provider resources, or studying public registry modules for design patterns.
 ---
 
 # Terraform Research Heuristics

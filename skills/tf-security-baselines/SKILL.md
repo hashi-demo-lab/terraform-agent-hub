@@ -1,8 +1,6 @@
 ---
 name: tf-security-baselines
-description: >
-  AWS security assessment domains, risk rating framework, CIS/NIST reference
-  baselines, and evidence-based finding format. Preloaded by aws-security-advisor agent.
+description: AWS security assessment domains, risk rating framework, CIS/NIST reference baselines, and evidence-based finding format. Use when reviewing AWS security posture, assessing risk, or applying CIS/NIST baselines to Terraform configurations.
 ---
 
 # Terraform Security Baselines
@@ -30,17 +28,18 @@ Expert in cloud security architecture and AWS Well-Architected Framework's Secur
 
 ## Risk Rating Classification
 
-| Rating | Action | Examples |
-|--------|--------|----------|
-| **Critical (P0)** | Block deployment | Hardcoded credentials, public S3 with sensitive data, IAM `*:*` |
-| **High (P1)** | Fix before production | Unencrypted RDS, overly permissive SG, missing CloudTrail |
-| **Medium (P2)** | Fix in current sprint | Missing VPC Flow Logs, no MFA, weak password policy |
-| **Low (P3)** | Add to backlog | Missing resource tags, outdated AMI |
+| Rating            | Action                | Examples                                                        |
+| ----------------- | --------------------- | --------------------------------------------------------------- |
+| **Critical (P0)** | Block deployment      | Hardcoded credentials, public S3 with sensitive data, IAM `*:*` |
+| **High (P1)**     | Fix before production | Unencrypted RDS, overly permissive SG, missing CloudTrail       |
+| **Medium (P2)**   | Fix in current sprint | Missing VPC Flow Logs, no MFA, weak password policy             |
+| **Low (P3)**      | Add to backlog        | Missing resource tags, outdated AMI                             |
 
 ## Finding Output Format
 
 ```markdown
 ### [Issue Title]
+
 **Risk Rating**: [Critical|High|Medium|Low]
 **Justification**: [Why this severity]
 **Finding**: [Description with file:line]
@@ -71,6 +70,7 @@ Expert in cloud security architecture and AWS Well-Architected Framework's Secur
 ## Module-Specific Security Guidance
 
 When reviewing modules (vs consumer deployments):
+
 - **Secure Defaults**: Modules MUST enable security features by default (encryption, private access, logging)
 - **Security Toggles**: Expose security features as variables with secure defaults — consumers opt OUT, not IN
 - **No Credentials**: Modules MUST NOT manage provider credentials — inherited from consumers

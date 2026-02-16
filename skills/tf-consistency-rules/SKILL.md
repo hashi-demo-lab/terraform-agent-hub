@@ -1,6 +1,6 @@
 ---
 name: tf-consistency-rules
-description: Cross-artifact traceability rules for spec-to-plan-to-tasks coverage analysis. Orphan detection, terminology drift, and consistency validation methodology.
+description: Cross-artifact traceability rules for spec-to-plan-to-tasks coverage analysis. Use when validating cross-artifact consistency, detecting orphan requirements, or identifying terminology drift between spec, plan, and tasks.
 ---
 
 # Cross-Artifact Consistency Rules

@@ -1,6 +1,6 @@
 ---
 name: tf-task-patterns
-description: Task breakdown format and phase organization for Terraform module development.
+description: Task breakdown format and phase organization for Terraform module development. Use when generating tasks.md from plan.md, organizing implementation phases, or mapping requirements to task checklists.
 ---
 
 # Task Breakdown Patterns
