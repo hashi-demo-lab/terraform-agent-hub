@@ -37,8 +37,8 @@ profiles:
     mappings:
       - source: agents/
         dest: .claude/agents/
-      # - source: skills/
-      #   dest: .claude/skills/
+      - source: skills/
+        dest: .claude/skills/
       # - source: scripts/
       #   dest: .foundations/scripts/
       - source: templates/
