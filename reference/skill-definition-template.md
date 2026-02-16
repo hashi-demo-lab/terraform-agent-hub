@@ -60,7 +60,7 @@
 #   1. Metadata (~100 tokens): name + description — always loaded in system prompt
 #   2. Instructions: SKILL.md body — loaded on activation
 #      Budget: <5000 tokens (AgentSkills.io) / <5000 words (Anthropic PDF)
-#   3. Resources (as needed): scripts/, references/, assets/ — loaded on demand
+#   3. Linked files (as needed): scripts/, references/, assets/ — loaded on demand
 #
 # Key Principles:
 #   - "The context window is a public good" — only include what the model
