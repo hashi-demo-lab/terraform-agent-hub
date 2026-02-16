@@ -3,7 +3,8 @@ name: tf-compound-patterns
 description: >
   Pattern extraction heuristics, pitfall recording format, and compound memory
   directory structure for capturing learnings from Terraform workflows.
-  Preloaded by all compound-* agents.
+  Use when extracting patterns, recording pitfalls, or capturing learnings from
+  completed Terraform workflow runs.
 ---
 
 # Compound Engineering Patterns for Terraform

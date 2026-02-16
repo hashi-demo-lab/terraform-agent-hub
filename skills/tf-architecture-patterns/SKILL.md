@@ -2,8 +2,8 @@
 name: tf-architecture-patterns
 description: >
   Terraform module design patterns, resource composition conventions, and project
-  structure standards. Covers VPC, IAM, compute, storage, and database patterns
-  for AWS module development.
+  structure standards. Use when designing module structure, choosing resource
+  composition patterns, or setting up project layout for AWS Terraform modules.
 ---
 
 # Terraform Architecture Patterns

@@ -3,7 +3,8 @@ name: tf-checklist-patterns
 description: >
   Checklist creation patterns for requirement quality validation. "Unit tests for English" —
   test the requirements themselves, not the implementation. Anti-examples, quality dimensions,
-  traceability rules. Preloaded by sdd-checklist agent.
+  traceability rules. Use when creating or reviewing requirement quality checklists for
+  Terraform infrastructure specifications.
 ---
 
 # Checklist Patterns: Unit Tests for Requirements
