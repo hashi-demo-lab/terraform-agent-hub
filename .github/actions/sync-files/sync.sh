@@ -131,7 +131,7 @@ for i in $(seq 0 $((MAPPING_COUNT - 1))); do
   FILES_SYNCED=$((FILES_SYNCED + SYNCED))
   # Collect managed file paths relative to repo root
   while IFS= read -r filepath; do
-    REL_PATH="${filepath#${WORK_DIR}/downstream/}"
+    REL_PATH="${filepath#"${WORK_DIR}"/downstream/}"
     MANAGED_FILES_LIST="${MANAGED_FILES_LIST}${REL_PATH}"$'\n'
   done < <(find "$DOWNSTREAM_DEST" -type f | sort)
   echo "  Files in destination: $SYNCED"
