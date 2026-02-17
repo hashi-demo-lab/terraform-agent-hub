@@ -39,8 +39,8 @@ profiles:
         dest: .claude/agents/
       - source: skills/
         dest: .claude/skills/
-      # - source: scripts/
-      #   dest: .foundations/scripts/
+      - source: scripts/
+        dest: .foundations/scripts/bash
       - source: templates/
         dest: .foundations/templates/
 
