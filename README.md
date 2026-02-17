@@ -2,9 +2,9 @@
 
 Central hub for shared Claude Code agents, skills, scripts, and markdown artifact templates synced to downstream workflow repos.
 
-## Problem
+## Background
 
-You manage multiple workflow template repos (`ai-iac-module-template`, `ai-iac-consumer-template`) that share common Claude Code agents, skills, scripts, and templates. When you update one of these shared files in a single repo, the others fall out of date. This repo is the single source of truth, with automated GitHub Actions to sync changes to all downstream repos via PRs.
+This project supports multiple workflow template repos (`ai-iac-module-template`, `ai-iac-consumer-template`) that share common Claude Code agents, skills, scripts, and templates. Repo-specific skills are filtered via profile excludes (for example, `tf-module-plan` is excluded from consumer repos, and `tf-consumer-plan` is excluded from module repos). To keep shared content consistent across downstream repos, this hub acts as the single source of truth and uses GitHub Actions to open sync PRs automatically.
 
 ## Architecture
 
@@ -58,6 +58,7 @@ All content directories are **flat** — there are no per-repo subdirectories. F
 ### 1. Create a GitHub PAT
 
 Create a [Personal Access Token](https://github.com/settings/tokens) (or GitHub App token) with these scopes:
+
 - `repo` — read/write access to downstream repos
 - `workflow` — required if syncing workflow files
 
@@ -89,13 +90,22 @@ Edit `sync-config/sync-config.yaml` to replace the placeholder repo names with y
 
 ```yaml
 profiles:
-  standard:
+  module-development:
     repos:
       - your-org/ai-iac-module-template
-      - your-org/ai-iac-consumer-template
     mappings:
       - source: agents/
         dest: .claude/agents/
+      # ...
+  consumer-development:
+    repos:
+      - your-org/ai-iac-consumer-template
+    mappings:
+      - source: skills/
+        dest: .claude/skills/
+        excludes:
+          - "skills/tf-module-plan/**"
+          - "skills/terraform-test/**"
       # ...
 ```
 
@@ -103,7 +113,7 @@ Profiles support a `host` field for GitHub Enterprise repos (defaults to `github
 
 ```yaml
 profiles:
-  ghe-standard:
+  module-development-ghe:
     host: "github.ibm.com"
     repos:
       - AdvArch/ai-iac-module-template
@@ -131,11 +141,11 @@ Profiles group repos that share the same sync mappings:
 
 ```yaml
 profiles:
-  standard:         # Full sync: agents, skills, scripts, templates
+  module-development: # Full sync: agents, skills, scripts, templates
     repos: [...]
-  limited:          # Agents and skills only
+  consumer-development: # Consumer sync with profile-specific excludes
     repos: [...]
-  persona:          # Custom subset with different paths
+  persona: # Custom subset with different paths
     repos: [...]
 ```
 
@@ -154,9 +164,9 @@ standalone:
 ### Excludes and Includes
 
 ```yaml
-global_excludes:          # Applied to all syncs
+global_excludes: # Applied to all syncs
   - ".DS_Store"
-  - "**/README.md"        # Per-directory READMEs stay in hub
+  - "**/README.md" # Per-directory READMEs stay in hub
 
 profiles:
   persona:
@@ -164,7 +174,7 @@ profiles:
       - source: skills/
         dest: .claude/skills/
         excludes:
-          - "skills/terraform-plan/**"   # Skip specific skills
+          - "skills/terraform-plan/**" # Skip specific skills
 ```
 
 ## Workflows
@@ -173,10 +183,10 @@ profiles:
 
 Triggers automatically when files change in `agents/`, `skills/`, `scripts/`, `templates/`, or `sync-config/` on the `main` branch. Also supports manual dispatch with options:
 
-| Input | Description |
-|-------|-------------|
+| Input             | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
 | `force_full_sync` | Sync all mapped files to all repos (ignores change detection) |
-| `dry_run` | Detect changes but don't create PRs |
+| `dry_run`         | Detect changes but don't create PRs                           |
 
 ### Drift Detection
 
@@ -220,14 +230,14 @@ git add scripts/my-script.sh && git commit -m "Add my-script" && git push
 
 ## Edge Cases
 
-| Scenario | Solution |
-|----------|----------|
-| Downstream repo missing target dir | `mkdir -p` before copy |
-| Existing open sync PR | Force-push to same branch, update existing PR |
-| File deleted in hub | `rsync --delete` removes it downstream (configurable via `sync_deletions`) |
-| Sync config YAML error | `parse_config.py` fails with clear error |
-| New repo in config doesn't exist | Checkout fails gracefully, other repos still sync |
-| Sync config itself changes | Both workflows are triggered, ensuring all repos get the updated mappings |
+| Scenario                           | Solution                                                                   |
+| ---------------------------------- | -------------------------------------------------------------------------- |
+| Downstream repo missing target dir | `mkdir -p` before copy                                                     |
+| Existing open sync PR              | Force-push to same branch, update existing PR                              |
+| File deleted in hub                | `rsync --delete` removes it downstream (configurable via `sync_deletions`) |
+| Sync config YAML error             | `parse_config.py` fails with clear error                                   |
+| New repo in config doesn't exist   | Checkout fails gracefully, other repos still sync                          |
+| Sync config itself changes         | Both workflows are triggered, ensuring all repos get the updated mappings  |
 
 ## Local Development
 
@@ -254,6 +264,7 @@ pre-commit run validate-agents --all-files
 ### Authoring Guides
 
 See `reference/` for comprehensive authoring guides:
+
 - [`reference/skills-authoring-guide.md`](reference/skills-authoring-guide.md) — SKILL.md spec and conventions
 - [`reference/agent-authoring-guide.md`](reference/agent-authoring-guide.md) — agent .md conventions
 

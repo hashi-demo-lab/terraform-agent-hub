@@ -30,8 +30,8 @@ global_excludes:
 # Profiles — groups of repos sharing sync mappings
 # ──────────────────────────────────────────────
 profiles:
-  # Standard profile: full sync of all content directories
-  standard:
+  # Module development profile: full sync of all content directories
+  module-development:
     repos:
       - hashi-demo-lab/ai-iac-module-template
     mappings:
@@ -44,8 +44,25 @@ profiles:
       - source: templates/
         dest: .foundations/templates/
 
+  # Consumer development profile: excludes module-only skills
+  consumer-development:
+    repos:
+      - hashi-demo-lab/ai-iac-consumer-template
+    mappings:
+      - source: agents/
+        dest: .claude/agents/
+      - source: skills/
+        dest: .claude/skills/
+        excludes:
+          - "skills/tf-module-plan/**"
+          - "skills/terraform-test/**"
+      - source: scripts/
+        dest: .foundations/scripts/bash
+      - source: templates/
+        dest: .foundations/templates/
+
   # GitHub Enterprise profile: same mappings, different host
-  ghe-standard:
+  module-development-ghe:
     host: "github.ibm.com"
     repos:
       - AdvArch/ai-iac-module-template
@@ -54,6 +71,8 @@ profiles:
         dest: .claude/agents/
       - source: skills/
         dest: .claude/skills/
+        excludes:
+          - "skills/tf-consumer-plan/**"
       - source: scripts/
         dest: .foundations/scripts/bash
       - source: templates/
