@@ -39,6 +39,8 @@ profiles:
         dest: .claude/agents/
       - source: skills/
         dest: .claude/skills/
+        excludes:
+          - "skills/tf-consumer-plan/**"
       - source: scripts/
         dest: .foundations/scripts/bash
       - source: templates/
