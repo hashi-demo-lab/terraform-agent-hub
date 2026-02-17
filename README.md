@@ -71,7 +71,19 @@ Name: SYNC_PAT
 Value: <your-token>
 ```
 
-### 3. Configure downstream repos
+### 3. (Optional) Add a GitHub Enterprise secret
+
+If syncing to GitHub Enterprise repos, create a PAT on the GHE instance and add it as a separate secret:
+
+```
+Settings → Secrets and variables → Actions → New repository secret
+Name: SYNC_PAT_GHE_IBM
+Value: <your-ghe-token>
+```
+
+Each GHE host needs its own `SYNC_PAT_GHE_*` secret. The workflows pass a token map so the correct token is used per host.
+
+### 4. Configure downstream repos
 
 Edit `sync-config/sync-config.yaml` to replace the placeholder repo names with your actual downstream repos:
 
@@ -87,7 +99,21 @@ profiles:
       # ...
 ```
 
-### 4. Test with a dry run
+Profiles support a `host` field for GitHub Enterprise repos (defaults to `github.com`):
+
+```yaml
+profiles:
+  ghe-standard:
+    host: "github.ibm.com"
+    repos:
+      - AdvArch/ai-iac-module-template
+    mappings:
+      - source: agents/
+        dest: .claude/agents/
+      # ...
+```
+
+### 5. Test with a dry run
 
 Trigger the sync manually to verify configuration:
 

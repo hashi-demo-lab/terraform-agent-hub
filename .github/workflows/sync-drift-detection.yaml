@@ -45,20 +45,33 @@ jobs:
           with open("sync-config/sync-config.yaml") as f:
               config = yaml.safe_load(f)
 
-          repos = []
+          all_repos: list[dict[str, str]] = []
+          seen: set[str] = set()
+
+          def add_repo(repo: str, host: str) -> None:
+              if repo not in seen:
+                  seen.add(repo)
+                  all_repos.append({"repo": repo, "host": host})
 
           for profile in config.get("profiles", {}).values():
-              repos.extend(profile.get("repos", []))
+              if not profile:
+                  continue
+              host = profile.get("host", "github.com")
+              for repo in profile.get("repos", []):
+                  add_repo(repo, host)
 
-          for repo in config.get("standalone", {}).keys():
-              repos.append(repo)
+          for repo, standalone_config in config.get("standalone", {}).items():
+              if not standalone_config:
+                  continue
+              host = standalone_config.get("host", "github.com")
+              add_repo(repo, host)
 
-          unique_repos = sorted(set(repos))
+          all_repos.sort(key=lambda r: r["repo"])
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"repos={json.dumps(unique_repos)}\n")
+              f.write(f"repos={json.dumps(all_repos)}\n")
 
-          print(f"All downstream repos ({len(unique_repos)}): {unique_repos}")
+          print(f"All downstream repos ({len(all_repos)}): {all_repos}")
           SCRIPT
 
       - name: Summary
@@ -83,7 +96,9 @@ jobs:
           import sys, json
           repos = json.loads(sys.stdin.read())
           for r in repos:
-              print(f'- \`{r}\`')
+              name = r['repo'] if isinstance(r, dict) else r
+              host = r.get('host', 'github.com') if isinstance(r, dict) else 'github.com'
+              print(f'- [\`{name}\`](https://{host}/{name})')
           " >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -98,7 +113,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        repo: ${{ fromJson(needs.collect.outputs.repos) }}
+        include: ${{ fromJson(needs.collect.outputs.repos) }}
     steps:
       - name: Checkout hub
         uses: actions/checkout@v4
@@ -109,6 +124,7 @@ jobs:
         with:
           downstream_repo: ${{ matrix.repo }}
           token: ${{ secrets.SYNC_PAT }}
+          tokens: '{"github.com":"${{ secrets.SYNC_PAT }}","github.ibm.com":"${{ secrets.SYNC_PAT_GHE_IBM }}"}'
           hub_sha: ${{ github.sha }}
           changed_files: "[]"
           sync_mode: full

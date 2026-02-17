@@ -10,6 +10,7 @@ Reads environment variables:
 
 Outputs a JSON object to stdout:
 {
+  "host": "github.com",
   "defaults": { ... },
   "mappings": [
     {
@@ -21,6 +22,9 @@ Outputs a JSON object to stdout:
   ],
   "global_excludes": [...]
 }
+
+The "host" field is derived from the profile or standalone entry that contains
+the repo. Defaults to "github.com" when not specified.
 """
 
 import json
@@ -60,10 +64,17 @@ def load_config(config_path: str) -> dict:
     return config
 
 
-def find_repo_mappings(config: dict, downstream_repo: str) -> list[dict] | None:
-    """Find mappings for the given downstream repo from all matching profiles and standalone."""
+def find_repo_mappings(
+    config: dict, downstream_repo: str
+) -> tuple[str, list[dict]] | None:
+    """Find host and mappings for the given downstream repo.
+
+    Returns (host, mappings) or None if the repo is not found.
+    The host defaults to "github.com" when not specified in the config.
+    """
     all_mappings: list[dict] = []
     seen: set[tuple[str, str]] = set()
+    repo_host: str = "github.com"
 
     # Collect from all matching profiles
     profiles = config.get("profiles", {}) or {}
@@ -72,6 +83,7 @@ def find_repo_mappings(config: dict, downstream_repo: str) -> list[dict] | None:
             continue
         repos = profile.get("repos", [])
         if downstream_repo in repos:
+            repo_host = profile.get("host", "github.com")
             for m in profile.get("mappings", []):
                 key = (m["source"], m["dest"])
                 if key not in seen:
@@ -81,13 +93,15 @@ def find_repo_mappings(config: dict, downstream_repo: str) -> list[dict] | None:
     # Collect from standalone
     standalone = config.get("standalone", {}) or {}
     if downstream_repo in standalone and standalone[downstream_repo]:
-        for m in standalone[downstream_repo].get("mappings", []):
+        standalone_config = standalone[downstream_repo]
+        repo_host = standalone_config.get("host", "github.com")
+        for m in standalone_config.get("mappings", []):
             key = (m["source"], m["dest"])
             if key not in seen:
                 seen.add(key)
                 all_mappings.append(m)
 
-    return all_mappings if all_mappings else None
+    return (repo_host, all_mappings) if all_mappings else None
 
 
 def filter_mappings_by_changed_files(
@@ -119,13 +133,15 @@ def resolve_mappings(
     defaults = config.get("defaults", {})
     global_excludes = config.get("global_excludes", [])
 
-    mappings = find_repo_mappings(config, downstream_repo)
-    if mappings is None:
+    result = find_repo_mappings(config, downstream_repo)
+    if result is None:
         print(
             f"::error::Repo '{downstream_repo}' not found in any profile or standalone config",
             file=sys.stderr,
         )
         sys.exit(1)
+
+    repo_host, mappings = result
 
     # In incremental mode, filter to only affected mappings
     if sync_mode == "incremental" and changed_files:
@@ -144,6 +160,7 @@ def resolve_mappings(
         )
 
     return {
+        "host": repo_host,
         "defaults": defaults,
         "mappings": resolved,
         "global_excludes": global_excludes,

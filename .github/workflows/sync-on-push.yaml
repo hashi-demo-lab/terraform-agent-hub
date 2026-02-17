@@ -158,43 +158,51 @@ jobs:
           sync_mode = os.environ.get("SYNC_MODE", "incremental")
           changed_files = json.loads(changed_files_json)
 
-          all_repos = []
+          all_repos: list[dict[str, str]] = []
+          seen: set[str] = set()
+
+          def add_repo(repo: str, host: str) -> None:
+              if repo not in seen:
+                  seen.add(repo)
+                  all_repos.append({"repo": repo, "host": host})
 
           # Collect repos from profiles
           for profile_name, profile in config.get("profiles", {}).items():
               if not profile:
                   continue
+              host = profile.get("host", "github.com")
               for repo in profile.get("repos", []):
                   if sync_mode == "full":
-                      all_repos.append(repo)
+                      add_repo(repo, host)
                       continue
                   # Check if any changed file matches this profile's source mappings
                   for mapping in profile.get("mappings", []):
                       source = mapping["source"]
                       if any(f.startswith(source) for f in changed_files):
-                          all_repos.append(repo)
+                          add_repo(repo, host)
                           break
 
           # Collect repos from standalone
           for repo, standalone_config in config.get("standalone", {}).items():
               if not standalone_config:
                   continue
+              host = standalone_config.get("host", "github.com")
               if sync_mode == "full":
-                  all_repos.append(repo)
+                  add_repo(repo, host)
                   continue
               for mapping in standalone_config.get("mappings", []):
                   source = mapping["source"]
                   if any(f.startswith(source) for f in changed_files):
-                      all_repos.append(repo)
+                      add_repo(repo, host)
                       break
 
-          # Deduplicate
-          unique_repos = sorted(set(all_repos))
+          # Sort by repo name for deterministic output
+          all_repos.sort(key=lambda r: r["repo"])
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"repos={json.dumps(unique_repos)}\n")
+              f.write(f"repos={json.dumps(all_repos)}\n")
 
-          print(f"Affected repos ({len(unique_repos)}): {unique_repos}")
+          print(f"Affected repos ({len(all_repos)}): {all_repos}")
           SCRIPT
         env:
           CHANGED_FILES: ${{ steps.changes.outputs.files }}
@@ -270,7 +278,9 @@ jobs:
                   lines.append("> If you expected a sync, use **workflow_dispatch** with **Force full sync**.")
           else:
               for r in repos:
-                  lines.append(f"- [`{r}`](https://github.com/{r})")
+                  repo_name = r["repo"] if isinstance(r, dict) else r
+                  repo_host = r.get("host", "github.com") if isinstance(r, dict) else "github.com"
+                  lines.append(f"- [`{repo_name}`](https://{repo_host}/{repo_name})")
           lines.append("")
 
           with open(summary, "a") as f:
@@ -288,7 +298,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        repo: ${{ fromJson(needs.detect.outputs.repos) }}
+        include: ${{ fromJson(needs.detect.outputs.repos) }}
     steps:
       - name: Checkout hub
         uses: actions/checkout@v4
@@ -299,6 +309,7 @@ jobs:
         with:
           downstream_repo: ${{ matrix.repo }}
           token: ${{ secrets.SYNC_PAT }}
+          tokens: '{"github.com":"${{ secrets.SYNC_PAT }}","github.ibm.com":"${{ secrets.SYNC_PAT_GHE_IBM }}"}'
           hub_sha: ${{ github.sha }}
           changed_files: ${{ needs.detect.outputs.changed_files }}
           sync_mode: ${{ needs.detect.outputs.sync_mode }}
@@ -308,6 +319,7 @@ jobs:
         if: always()
         env:
           REPO: ${{ matrix.repo }}
+          HOST: ${{ matrix.host }}
           CHANGES: ${{ steps.sync.outputs.changes_detected }}
           FILES_SYNCED: ${{ steps.sync.outputs.files_synced }}
           PR: ${{ steps.sync.outputs.pr_url }}
@@ -335,7 +347,7 @@ jobs:
             # Details table
             echo "| Detail | Value |"
             echo "|--------|-------|"
-            echo "| **Downstream repo** | [\`${REPO}\`](https://github.com/${REPO}) |"
+            echo "| **Downstream repo** | [\`${REPO}\`](https://${HOST}/${REPO}) |"
             echo "| **Sync mode** | \`${SYNC_MODE}\` |"
             echo "| **Changes detected** | \`${CHANGES}\` |"
             echo "| **Total managed files** | \`${FILES_SYNCED}\` |"

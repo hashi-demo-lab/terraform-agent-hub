@@ -44,6 +44,21 @@ profiles:
       - source: templates/
         dest: .foundations/templates/
 
+  # GitHub Enterprise profile: same mappings, different host
+  ghe-standard:
+    host: "github.ibm.com"
+    repos:
+      - AdvArch/ai-iac-module-template
+    mappings:
+      - source: agents/
+        dest: .claude/agents/
+      - source: skills/
+        dest: .claude/skills/
+      - source: scripts/
+        dest: .foundations/scripts/bash
+      - source: templates/
+        dest: .foundations/templates/
+
 # ──────────────────────────────────────────────
 # Standalone repos — custom one-off mappings
 # ──────────────────────────────────────────────

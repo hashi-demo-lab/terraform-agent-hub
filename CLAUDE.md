@@ -33,6 +33,7 @@ Hub repo that syncs shared agents, skills, scripts, and templates to downstream 
 - Both sync workflows use the same composite action — change sync logic in one place.
 - `SYNC_PAT` secret needs `repo` + `workflow` scopes.
 - All workflows write summaries to `$GITHUB_STEP_SUMMARY`.
+- GHE repos require a `host` field in sync-config profiles and a separate `SYNC_PAT_GHE_*` secret.
 
 ## Commands
 

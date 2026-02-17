@@ -22,6 +22,7 @@ global_excludes:                # Patterns excluded from all syncs
 
 profiles:
   <profile-name>:
+    host: github.com            # GitHub host (default: github.com)
     repos:
       - org/repo-name
     mappings:
@@ -32,6 +33,7 @@ profiles:
 
 standalone:
   org/special-repo:
+    host: github.com            # GitHub host (default: github.com)
     mappings:
       - source: agents/
         dest: custom/path/
@@ -41,5 +43,6 @@ standalone:
 
 - **Profiles** group repos that share identical sync mappings
 - **Standalone** repos have custom mappings that don't fit any profile
+- **host** sets the GitHub instance for all repos in a profile or standalone entry (default: `github.com`). Use for GitHub Enterprise.
 - **Excludes/Includes** at the mapping level override global settings
 - **sync_deletions** controls whether files deleted in hub are also deleted downstream

@@ -3,11 +3,15 @@ description: "Sync files from terraform-agent-hub to a downstream repo via PR"
 
 inputs:
   downstream_repo:
-    description: "Target repo in org/name format"
+    description: "Target repo in org/name format (supports github.com and GitHub Enterprise hosts)"
     required: true
   token:
-    description: "GitHub PAT or App token with repo access"
+    description: "GitHub PAT or App token with repo access (default token, used when no host-specific token is found in tokens)"
     required: true
+  tokens:
+    description: "JSON map of host->token for multi-host sync (e.g. {\"github.com\":\"...\",\"github.ibm.com\":\"...\"})"
+    required: false
+    default: "{}"
   hub_sha:
     description: "Hub commit SHA that triggered the sync"
     required: true
@@ -75,6 +79,7 @@ runs:
       env:
         DOWNSTREAM_REPO: ${{ inputs.downstream_repo }}
         TOKEN: ${{ inputs.token }}
+        TOKENS_JSON: ${{ inputs.tokens }}
         HUB_SHA: ${{ inputs.hub_sha }}
         MAPPINGS_JSON: ${{ steps.parse.outputs.mappings }}
         DRY_RUN: ${{ inputs.dry_run }}

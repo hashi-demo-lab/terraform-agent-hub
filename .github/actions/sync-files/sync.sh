@@ -10,19 +10,39 @@ set -euo pipefail
 #
 # Required environment variables:
 #   DOWNSTREAM_REPO  - target repo (org/name)
-#   TOKEN            - GitHub PAT or App token
+#   TOKEN            - GitHub PAT or App token (default fallback)
 #   HUB_SHA          - hub commit SHA that triggered sync
-#   MAPPINGS_JSON    - JSON output from parse_config.py
+#   MAPPINGS_JSON    - JSON output from parse_config.py (includes "host" field)
 #   DRY_RUN          - "true" to skip PR creation
+#
+# Optional environment variables:
+#   TOKENS_JSON      - JSON map of host->token for multi-host sync
+#                      e.g. {"github.com":"...","github.ibm.com":"..."}
+#                      REPO_HOST is derived from MAPPINGS_JSON "host" field.
 # ──────────────────────────────────────────────
-
-# ── Authenticate gh CLI with the sync token ──
-export GH_TOKEN="$TOKEN"
 
 # ── Parse config from JSON ──────────────────
 DEFAULTS=$(echo "$MAPPINGS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d['defaults']))")
 MAPPINGS=$(echo "$MAPPINGS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d['mappings']))")
 GLOBAL_EXCLUDES=$(echo "$MAPPINGS_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d['global_excludes']))")
+REPO_HOST=$(echo "$MAPPINGS_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin).get('host','github.com'))")
+
+# ── Resolve token for this repo's host ──────
+if [[ -n "${TOKENS_JSON:-}" && "$TOKENS_JSON" != "{}" ]]; then
+  RESOLVED_TOKEN=$(echo "$TOKENS_JSON" | python3 -c "
+import sys, json
+tokens = json.load(sys.stdin)
+host = '${REPO_HOST}'
+print(tokens.get(host, ''))
+")
+  if [[ -z "$RESOLVED_TOKEN" ]]; then
+    RESOLVED_TOKEN="$TOKEN"
+  fi
+else
+  RESOLVED_TOKEN="$TOKEN"
+fi
+export GH_TOKEN="$RESOLVED_TOKEN"
+export GH_HOST="$REPO_HOST"
 
 TARGET_BRANCH=$(echo "$DEFAULTS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('target_branch','main'))")
 BRANCH_PREFIX=$(echo "$DEFAULTS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('branch_prefix','hub-sync/'))")
@@ -57,7 +77,7 @@ echo "::endgroup::"
 # ── Clone downstream repo ──────────────────
 echo "::group::Cloning $DOWNSTREAM_REPO"
 if ! git clone --depth 1 --branch "$TARGET_BRANCH" \
-  "https://x-access-token:${TOKEN}@github.com/${DOWNSTREAM_REPO}.git" \
+  "https://x-access-token:${RESOLVED_TOKEN}@${REPO_HOST}/${DOWNSTREAM_REPO}.git" \
   "$WORK_DIR/downstream" 2>&1; then
   echo "::error::Failed to clone $DOWNSTREAM_REPO — does the repo exist and does the token have access?"
   echo "changes_detected=false" >> "$GITHUB_OUTPUT"
@@ -191,9 +211,9 @@ Changed files:
 ${CHANGED_LIST}"
 
 git config user.name "hub-sync[bot]"
-git config user.email "hub-sync[bot]@users.noreply.github.com"
+git config user.email "hub-sync[bot]@users.noreply.${REPO_HOST}"
 git commit -m "$COMMIT_MSG"
-git push --force "https://x-access-token:${TOKEN}@github.com/${DOWNSTREAM_REPO}.git" "$SYNC_BRANCH"
+git push --force "https://x-access-token:${RESOLVED_TOKEN}@${REPO_HOST}/${DOWNSTREAM_REPO}.git" "$SYNC_BRANCH"
 
 # ── Create or update PR ───────────────────
 PR_TITLE="${COMMIT_PREFIX} sync from terraform-agent-hub (${SHORT_SHA})"
