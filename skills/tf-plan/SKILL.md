@@ -3,11 +3,11 @@ name: tf-plan
 description: Planning orchestrator for Terraform module development. Drives spec-driven development from requirements intake through specification, clarification, planning, review, tasks, and analysis. Entry point for the planning workflow.
 ---
 
+# Planning Orchestrator
 
-## Workflow Steps
-- Execute phases sequentially. Complete each before proceeding.
-- Before and after each subagent run: post progress to the gh issue.
-- use the following template for gh issues:
+Execute phases sequentially. Complete each before proceeding. All artifacts land in `specs/{FEATURE}/`.
+
+Before and after each subagent run, post progress to the gh issue:
 
 ```
 bash .foundations/scripts/bash/post-issue-progress.sh $ISSUE_NUMBER "<step>" "<status>" "<summary>" "$DETAILS"
