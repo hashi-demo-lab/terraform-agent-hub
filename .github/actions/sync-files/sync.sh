@@ -44,6 +44,13 @@ fi
 export GH_TOKEN="$RESOLVED_TOKEN"
 export GH_HOST="$REPO_HOST"
 
+# Build fully-qualified repo ref for gh CLI (HOST/OWNER/REPO for GHE)
+if [[ "$REPO_HOST" == "github.com" ]]; then
+  GH_REPO="$DOWNSTREAM_REPO"
+else
+  GH_REPO="${REPO_HOST}/${DOWNSTREAM_REPO}"
+fi
+
 TARGET_BRANCH=$(echo "$DEFAULTS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('target_branch','main'))")
 BRANCH_PREFIX=$(echo "$DEFAULTS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('branch_prefix','hub-sync/'))")
 COMMIT_PREFIX=$(echo "$DEFAULTS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('commit_prefix','chore(sync):'))")
@@ -231,7 +238,7 @@ ${CHANGED_LIST}
 
 # Check for existing PR
 EXISTING_PR=$(gh pr list \
-  --repo "$DOWNSTREAM_REPO" \
+  --repo "$GH_REPO" \
   --head "$SYNC_BRANCH" \
   --base "$TARGET_BRANCH" \
   --state open \
@@ -245,8 +252,8 @@ else
   # Ensure labels exist in downstream repo
   IFS=',' read -ra LABEL_ARRAY <<< "$PR_LABELS"
   for label in "${LABEL_ARRAY[@]}"; do
-    if ! gh label list --repo "$DOWNSTREAM_REPO" --search "$label" --json name --jq '.[].name' 2>/dev/null | grep -qx "$label"; then
-      gh label create "$label" --repo "$DOWNSTREAM_REPO" --description "Automated sync from terraform-agent-hub" --color "1d76db" 2>/dev/null || true
+    if ! gh label list --repo "$GH_REPO" --search "$label" --json name --jq '.[].name' 2>/dev/null | grep -qx "$label"; then
+      gh label create "$label" --repo "$GH_REPO" --description "Automated sync from terraform-agent-hub" --color "1d76db" 2>/dev/null || true
     fi
   done
 
@@ -258,7 +265,7 @@ else
 
   # shellcheck disable=SC2086
   NEW_PR=$(gh pr create \
-    --repo "$DOWNSTREAM_REPO" \
+    --repo "$GH_REPO" \
     --head "$SYNC_BRANCH" \
     --base "$TARGET_BRANCH" \
     --title "$PR_TITLE" \
