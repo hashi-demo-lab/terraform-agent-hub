@@ -51,8 +51,8 @@ jobs:
       - name: Run pre-commit
         id: pre_commit
         run: |
+          set -o pipefail
           pre-commit run --all-files --show-diff-on-failure 2>&1 | tee /tmp/pre-commit-output.txt
-          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Summary
         if: always()
