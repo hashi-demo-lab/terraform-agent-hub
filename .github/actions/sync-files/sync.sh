@@ -41,7 +41,12 @@ print(tokens.get(host, ''))
 else
   RESOLVED_TOKEN="$TOKEN"
 fi
-export GH_TOKEN="$RESOLVED_TOKEN"
+# gh CLI uses GH_TOKEN for github.com, GH_ENTERPRISE_TOKEN for GHE hosts
+if [[ "$REPO_HOST" == "github.com" ]]; then
+  export GH_TOKEN="$RESOLVED_TOKEN"
+else
+  export GH_ENTERPRISE_TOKEN="$RESOLVED_TOKEN"
+fi
 export GH_HOST="$REPO_HOST"
 
 # Build fully-qualified repo ref for gh CLI (HOST/OWNER/REPO for GHE)
