@@ -23,3 +23,10 @@ cat > ~/.terraform.d/credentials.tfrc.json << EOF
 }
 EOF
 echo "Terraform credentials configured"
+
+# Install pre-commit git hooks
+echo "Installing pre-commit hooks..."
+pre-commit install
+echo "Pre-commit hooks installed"
+
+echo "=== Post-Create Setup Complete ==="

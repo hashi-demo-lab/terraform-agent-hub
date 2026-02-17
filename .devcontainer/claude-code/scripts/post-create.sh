@@ -43,4 +43,9 @@ if [ -f "$CERT_PATH" ]; then
     } >> /home/node/.zshrc
 fi
 
+# Install pre-commit git hooks
+echo "Installing pre-commit hooks..."
+pre-commit install
+echo "Pre-commit hooks installed"
+
 echo "=== Post-Create Setup Complete ==="
