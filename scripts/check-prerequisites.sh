@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2153  # Variables (REPO_ROOT, CURRENT_BRANCH, etc.) are set via eval "$(get_feature_paths)"
 
 # Consolidated prerequisite checking script
 #
@@ -57,13 +58,13 @@ OPTIONS:
 EXAMPLES:
   # Check task prerequisites (plan.md required)
   ./check-prerequisites.sh --json
-  
+
   # Check implementation prerequisites (plan.md + tasks.md required)
   ./check-prerequisites.sh --json --require-tasks --include-tasks
-  
+
   # Get feature paths only (no validation)
   ./check-prerequisites.sh --paths-only
-  
+
 EOF
             exit 0
             ;;
@@ -76,10 +77,11 @@ done
 
 # Source common functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/common.sh
 source "$SCRIPT_DIR/common.sh"
 
 # Get feature paths and validate branch
-eval $(get_feature_paths)
+eval "$(get_feature_paths)"
 check_feature_branch "$CURRENT_BRANCH" "$HAS_GIT" || exit 1
 
 # If paths-only mode, output paths and exit (support JSON + paths-only combined)
@@ -124,7 +126,7 @@ docs=()
 
 # Always check these optional docs
 # Check for individual research files (no longer merged into single research.md)
-for f in "$feature_dir"/research-*.md; do
+for f in "$FEATURE_DIR"/research-*.md; do
     [[ -f "$f" ]] && docs+=("$(basename "$f")")
 done
 [[ -f "$DATA_MODEL" ]] && docs+=("contracts/data-model.md")
@@ -150,22 +152,22 @@ if $JSON_MODE; then
         json_docs=$(printf '"%s",' "${docs[@]}")
         json_docs="[${json_docs%,}]"
     fi
-    
+
     printf '{"FEATURE_DIR":"%s","AVAILABLE_DOCS":%s}\n' "$FEATURE_DIR" "$json_docs"
 else
     # Text output
     echo "FEATURE_DIR:$FEATURE_DIR"
     echo "AVAILABLE_DOCS:"
-    
+
     # Show status of each potential document
     # Check for individual research files
-    for f in "$feature_dir"/research-*.md; do
+    for f in "$FEATURE_DIR"/research-*.md; do
         [[ -f "$f" ]] && check_file "$f" "$(basename "$f")"
     done
     check_file "$DATA_MODEL" "contracts/data-model.md"
     check_dir "$CONTRACTS_DIR" "contracts/"
     check_file "$QUICKSTART" "quickstart.md"
-    
+
     if $INCLUDE_TASKS; then
         check_file "$TASKS" "tasks.md"
     fi
