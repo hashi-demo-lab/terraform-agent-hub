@@ -45,3 +45,15 @@ description: Cross-artifact traceability rules for spec-to-plan-to-tasks coverag
 ### G. Research-Plan Alignment
 - Plan decisions contradicting research conclusions
 - Research security considerations not reflected in plan or spec
+
+## Examples
+
+**Terminology drift (Pass F)**:
+- Spec says `database_subnet_group`, plan says `db_subnet_group`, tasks say `rds_subnet_group` — same concept, three names. Consolidate to one term across all artifacts.
+
+**Orphan requirement (Pass E)**:
+- Spec requires "All S3 buckets must enable versioning" but no task in `tasks.md` implements or verifies bucket versioning. Flag as coverage gap and add a task.
+
+**Ambiguity (Pass B)**:
+- Bad: "The module should be fast and scalable"
+- Good: "The module must support up to 50 subnets per VPC with plan time under 30 seconds"
