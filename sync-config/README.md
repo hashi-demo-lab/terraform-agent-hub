@@ -28,8 +28,8 @@ profiles:
     mappings:
       - source: agents/         # Hub path
         dest: .claude/agents/   # Downstream path
-        excludes: []            # Per-mapping excludes
-        includes: []            # Per-mapping includes (overrides excludes)
+        excludes: []            # Per-mapping excludes (source-relative or repo-root)
+        includes: []            # Per-mapping includes (source-relative or repo-root; overrides excludes)
 
 standalone:
   org/special-repo:

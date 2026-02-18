@@ -2,6 +2,27 @@
 # shellcheck disable=SC2129
 set -euo pipefail
 
+normalize_pattern_for_source() {
+  local source_path="$1"
+  local pattern="$2"
+
+  python3 - <<'PY' "$source_path" "$pattern"
+import sys
+
+source = sys.argv[1].strip()
+pattern = sys.argv[2].strip()
+
+source_trimmed = source.rstrip('/')
+
+if pattern == source_trimmed:
+  print('.')
+elif source_trimmed and pattern.startswith(source_trimmed + '/'):
+  print(pattern[len(source_trimmed) + 1 :])
+else:
+  print(pattern)
+PY
+}
+
 # ──────────────────────────────────────────────
 # sync.sh — Core sync logic for terraform-agent-hub
 #
@@ -137,13 +158,21 @@ for i in $(seq 0 $((MAPPING_COUNT - 1))); do
   EXCL_COUNT=$(echo "$EXCLUDES" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
   for j in $(seq 0 $((EXCL_COUNT - 1))); do
     PATTERN=$(echo "$EXCLUDES" | python3 -c "import sys,json; print(json.load(sys.stdin)[$j])")
+    NORMALIZED_PATTERN=$(normalize_pattern_for_source "$SOURCE" "$PATTERN")
     MAPPING_ARGS="$MAPPING_ARGS --exclude=$PATTERN"
+    if [[ "$NORMALIZED_PATTERN" != "$PATTERN" ]]; then
+      MAPPING_ARGS="$MAPPING_ARGS --exclude=$NORMALIZED_PATTERN"
+    fi
   done
 
   INCL_COUNT=$(echo "$INCLUDES" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
   for j in $(seq 0 $((INCL_COUNT - 1))); do
     PATTERN=$(echo "$INCLUDES" | python3 -c "import sys,json; print(json.load(sys.stdin)[$j])")
+    NORMALIZED_PATTERN=$(normalize_pattern_for_source "$SOURCE" "$PATTERN")
     MAPPING_ARGS="$MAPPING_ARGS --include=$PATTERN"
+    if [[ "$NORMALIZED_PATTERN" != "$PATTERN" ]]; then
+      MAPPING_ARGS="$MAPPING_ARGS --include=$NORMALIZED_PATTERN"
+    fi
   done
 
   # Build rsync command
